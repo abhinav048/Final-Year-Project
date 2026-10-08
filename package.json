@@ -1,0 +1,25 @@
+{
+  "name": "final-year-project",
+  "version": "1.0.0",
+  "description": "[![IEEE Research Paper Prototype](https://img.shields.io/badge/Research%20Prototype-IEEE%20Target-059669.svg)](#) [![Stack](https://img.shields.io/badge/Tech%20Stack-React%20%7C%20Node.js%20%7C%20TypeScript%20%7C%20Ethers.js-0284c7.svg)](#) [![Data Status](https://img.shields.io/badge/Dataset-Synthetic%20Demo%20Data-d97706.svg)](#)",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "dev": "concurrently -n \"BACKEND,FRONTEND\" -c \"yellow,cyan\" \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:backend": "npm --prefix backend run build",
+    "build:frontend": "npm --prefix frontend run build",
+    "build": "npm run build:backend && npm run build:frontend",
+    "start": "npm --prefix backend run start",
+    "blockchain:compile": "npm --prefix blockchain run compile",
+    "blockchain:test": "npm --prefix blockchain run test",
+    "blockchain:deploy": "npm --prefix blockchain run deploy:local",
+    "blockchain:node": "npm --prefix blockchain run node"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}

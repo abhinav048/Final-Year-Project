@@ -1,0 +1,19 @@
+{
+  "name": "seedsure-blockchain",
+  "version": "1.0.0",
+  "description": "SeedSure Smart Contracts and Blockchain Environment",
+  "type": "module",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "node": "hardhat node",
+    "deploy": "hardhat run scripts/deploy.js --network localhost",
+    "deploy:local": "hardhat run scripts/deploy.js"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.1.2",
+    "@openzeppelin/contracts": "^5.6.1",
+    "dotenv": "^18.0.6",
+    "hardhat": "^2.22.19"
+  }
+}
