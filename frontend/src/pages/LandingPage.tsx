@@ -112,10 +112,10 @@ export const LandingPage: React.FC = () => {
           <div className="px-4 sm:px-10 lg:px-16 pt-12 sm:pt-20 pb-16 sm:pb-24 text-center relative">
             
             {/* Hand-Drawn Line-Art Leaves in Margins (§11.3) */}
-            <div className="hidden lg:block absolute left-4 top-12 w-32 h-44 pointer-events-none">
+            <div className="hidden lg:block absolute left-2 xl:left-8 top-6 w-28 h-40 xl:w-32 xl:h-44 pointer-events-none opacity-80 -rotate-6">
               <LeafDecor variant="branch" />
             </div>
-            <div className="hidden lg:block absolute right-4 top-16 w-32 h-44 pointer-events-none">
+            <div className="hidden lg:block absolute right-2 xl:right-8 top-6 w-28 h-40 xl:w-32 xl:h-44 pointer-events-none opacity-80 rotate-6">
               <LeafDecor variant="fern" />
             </div>
 
@@ -698,7 +698,6 @@ export const LandingPage: React.FC = () => {
               <Link to="/farmer" className="hover:text-white transition-colors">Farmer Portal</Link>
               <Link to="/seller" className="hover:text-white transition-colors">Breeder Hub</Link>
               <Link to="/admin" className="hover:text-white transition-colors">CA Console</Link>
-              <Link to="/design-system" className="hover:text-white transition-colors">Design System</Link>
             </div>
           </div>
         </div>

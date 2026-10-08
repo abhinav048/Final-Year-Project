@@ -7,8 +7,12 @@ import { calculateTrustScore, SellerFeatures } from "./mlScorer.js";
 const DB_FILE = path.resolve(process.cwd(), "seedsure.db");
 export const db = new Database(DB_FILE);
 
-// Enable WAL mode for high performance
+// Enable WAL mode & memory optimizations for high performance
 db.pragma("journal_mode = WAL");
+db.pragma("synchronous = NORMAL");
+db.pragma("temp_store = MEMORY");
+db.pragma("cache_size = -64000"); // 64MB cache
+db.pragma("foreign_keys = ON");
 
 // Initialize Schema
 export function initDatabase() {
@@ -124,6 +128,18 @@ export function initDatabase() {
       triggerEvent TEXT NOT NULL,
       createdAt TEXT NOT NULL
     );
+
+    -- High-Performance Query & Join Indexes
+    CREATE INDEX IF NOT EXISTS idx_seeds_seller ON seeds(sellerAddress);
+    CREATE INDEX IF NOT EXISTS idx_seeds_cropType ON seeds(cropType);
+    CREATE INDEX IF NOT EXISTS idx_seeds_status ON seeds(certificationStatus);
+    CREATE INDEX IF NOT EXISTS idx_orders_buyer ON orders(buyerAddress);
+    CREATE INDEX IF NOT EXISTS idx_orders_seller ON orders(sellerAddress);
+    CREATE INDEX IF NOT EXISTS idx_orders_batch ON orders(batchId);
+    CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
+    CREATE INDEX IF NOT EXISTS idx_feedback_seller ON feedback(sellerAddress);
+    CREATE INDEX IF NOT EXISTS idx_disputes_order ON disputes(orderId);
+    CREATE INDEX IF NOT EXISTS idx_trust_seller ON trust_score_history(sellerAddress);
   `);
 
   // Seed sample data if empty

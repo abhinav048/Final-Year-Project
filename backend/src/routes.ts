@@ -70,6 +70,8 @@ function syncSellerScore(sellerAddress: string, triggerEvent: string) {
     scoreResult.modelVersion,
     scoreResult.featuresHash,
     JSON.stringify(scoreResult.rawFeatures),
+    triggerEvent || "SCORE_UPDATE",
+    new Date().toISOString()
   );
 
   recordSessionTransaction(
@@ -819,33 +821,60 @@ router.get("/ml/model-info", (_req: Request, res: Response) => {
 });
 
 // ==========================================
-// 7. PLATFORM ANALYTICS ENDPOINT
+// 7. PLATFORM ANALYTICS ENDPOINT (Optimized & In-Memory Cached)
 // ==========================================
 
+let analyticsCache: { data: any; expiresAt: number } | null = null;
+
+export function invalidateAnalyticsCache() {
+  analyticsCache = null;
+}
+
 router.get("/analytics", (_req: Request, res: Response) => {
-  const totalBatches = (db.prepare("SELECT count(*) as c FROM seeds").get() as any).c;
-  const certifiedBatches = (db.prepare("SELECT count(*) as c FROM seeds WHERE certificationStatus = 'Certified'").get() as any).c;
-  const totalSellers = (db.prepare("SELECT count(*) as c FROM sellers").get() as any).c;
-  const totalOrders = (db.prepare("SELECT count(*) as c FROM orders").get() as any).c;
-  const activeEscrowEth = (db.prepare("SELECT coalesce(sum(totalPriceEth), 0) as s FROM orders WHERE escrowLocked = 1").get() as any).s;
-  const avgTrustScore = (db.prepare("SELECT avg(trustScore) as a FROM sellers").get() as any).a;
+  const now = Date.now();
+  if (analyticsCache && analyticsCache.expiresAt > now) {
+    return res.json({
+      success: true,
+      data: analyticsCache.data,
+      cached: true
+    });
+  }
+
+  // Single-pass subquery aggregation for ultra-fast response
+  const counts = db.prepare(`
+    SELECT 
+      (SELECT count(*) FROM seeds) as totalBatches,
+      (SELECT count(*) FROM seeds WHERE certificationStatus = 'Certified') as certifiedBatches,
+      (SELECT count(*) FROM sellers) as totalSellers,
+      (SELECT count(*) FROM orders) as totalOrders,
+      (SELECT coalesce(sum(totalPriceEth), 0) FROM orders WHERE escrowLocked = 1) as activeEscrowEth,
+      (SELECT avg(trustScore) FROM sellers) as avgTrustScore
+  `).get() as any;
+
   const cropDistribution = db.prepare("SELECT cropType, count(*) as count FROM seeds GROUP BY cropType").all();
   const riskDistribution = db.prepare("SELECT riskCategory, count(*) as count FROM sellers GROUP BY riskCategory").all();
 
+  const data = {
+    totalBatches: counts.totalBatches,
+    certifiedBatches: counts.certifiedBatches,
+    certificationRate: counts.totalBatches > 0 ? Math.round((counts.certifiedBatches / counts.totalBatches) * 100) : 0,
+    totalSellers: counts.totalSellers,
+    totalOrders: counts.totalOrders,
+    activeEscrowEth: parseFloat(Number(counts.activeEscrowEth).toFixed(4)),
+    avgTrustScore: Math.round(counts.avgTrustScore || 0),
+    cropDistribution,
+    riskDistribution,
+    contractAddresses: CONTRACT_ADDRESSES
+  };
+
+  analyticsCache = {
+    data,
+    expiresAt: now + 5000 // 5 seconds TTL cache
+  };
+
   res.json({
     success: true,
-    data: {
-      totalBatches,
-      certifiedBatches,
-      certificationRate: totalBatches > 0 ? Math.round((certifiedBatches / totalBatches) * 100) : 0,
-      totalSellers,
-      totalOrders,
-      activeEscrowEth: parseFloat(activeEscrowEth.toFixed(4)),
-      avgTrustScore: Math.round(avgTrustScore || 0),
-      cropDistribution,
-      riskDistribution,
-      contractAddresses: CONTRACT_ADDRESSES
-    }
+    data
   });
 });
 

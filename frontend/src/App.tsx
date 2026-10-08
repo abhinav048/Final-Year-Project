@@ -19,6 +19,8 @@ import { BlockchainPage } from "./pages/BlockchainPage";
 import { DesignSystemPage } from "./pages/DesignSystemPage";
 import { connectMetaMask } from "./web3";
 
+import { ProtectedRoute } from "./components/ProtectedRoute";
+
 function AppContent() {
   const { user } = useAuth();
   const [isWalletConnected, setIsWalletConnected] = useState(false);
@@ -64,9 +66,33 @@ function AppContent() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/marketplace" element={<MarketplacePage currentAddress={activeAddress} />} />
           <Route path="/seed/:id" element={<SeedDetailPage currentAddress={activeAddress} />} />
-          <Route path="/farmer" element={<FarmerDashboard currentAddress={activeAddress} />} />
-          <Route path="/seller" element={<SellerDashboard currentAddress={activeAddress} />} />
-          <Route path="/admin" element={<AdminDashboard currentAddress={activeAddress} />} />
+          
+          {/* Strictly Protected Role Portals */}
+          <Route
+            path="/farmer"
+            element={
+              <ProtectedRoute allowedRoles={["farmer"]}>
+                <FarmerDashboard currentAddress={activeAddress} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/seller"
+            element={
+              <ProtectedRoute allowedRoles={["seller"]}>
+                <SellerDashboard currentAddress={activeAddress} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AdminDashboard currentAddress={activeAddress} />
+              </ProtectedRoute>
+            }
+          />
+
           <Route path="/blockchain" element={<BlockchainPage />} />
           <Route path="/verify/seed/:id" element={<PublicVerifyPage />} />
           <Route path="/design-system" element={<DesignSystemPage />} />

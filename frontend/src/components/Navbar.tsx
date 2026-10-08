@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { useLanguage, SUPPORTED_LANGUAGES, LanguageCode } from "../context/LanguageContext";
+import { useAuth, UserRole } from "../context/AuthContext";
+import { useLanguage, SUPPORTED_LANGUAGES } from "../context/LanguageContext";
 import {
   Sprout,
   ShoppingBag,
@@ -9,14 +9,12 @@ import {
   Wallet,
   ChevronDown,
   LogOut,
-  QrCode,
-  HelpCircle,
-  Building2,
   Check,
   Menu,
   X,
-  Palette,
-  ExternalLink
+  Building2,
+  ExternalLink,
+  UserCheck
 } from "lucide-react";
 import { PillButton } from "./PillButton";
 
@@ -31,12 +29,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   isWalletConnected,
   onOpenOnboarding
 }) => {
-  const { user, logout, login } = useAuth();
-  const { language, setLanguage, t } = useLanguage();
+  const { user, logout } = useAuth();
+  const { language, setLanguage } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [roleMenuOpen, setRoleMenuOpen] = useState(false);
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -61,14 +58,25 @@ export const Navbar: React.FC<NavbarProps> = ({
     setMobileMenuOpen(false);
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   const navLinks = [
     { label: "Home", path: "/" },
-    { label: "How it works", path: "/#how-it-works" },
     { label: "Marketplace", path: "/marketplace" },
+    { label: "How it works", path: "/#how-it-works" },
     { label: "Trust score", path: "/#trust-score" },
-    { label: "FAQ", path: "/#faq" },
-    { label: "Design System", path: "/design-system" }
+    { label: "Verify Bag", path: "/verify/seed/1" },
+    { label: "FAQ", path: "/#faq" }
   ];
+
+  const getPortalInfo = (role: UserRole) => {
+    if (role === "farmer") return { label: "Farmer Portal", path: "/farmer", icon: "🌾" };
+    if (role === "seller") return { label: "Breeder Hub", path: "/seller", icon: "🏢" };
+    return { label: "CA Console", path: "/admin", icon: "🛡️" };
+  };
 
   return (
     <header className="sticky top-4 z-40 w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -85,7 +93,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </Link>
 
-        {/* 2. Desktop Navigation Links */}
+        {/* 2. Desktop Navigation Links (No Design System) */}
         <nav className="hidden lg:flex items-center gap-1">
           {navLinks.map((link) => {
             const isActive = location.pathname === link.path;
@@ -104,17 +112,29 @@ export const Navbar: React.FC<NavbarProps> = ({
               </Link>
             );
           })}
+
+          {/* If logged in, show their authorized portal link */}
+          {user && (
+            <Link
+              to={getPortalInfo(user.role).path}
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ml-1 flex items-center gap-1.5 ${
+                location.pathname === getPortalInfo(user.role).path
+                  ? "bg-[#6AB547] text-white"
+                  : "bg-[#EEF3E6] text-[#2E6F40] hover:bg-[#6AB547] hover:text-white"
+              }`}
+            >
+              <span>{getPortalInfo(user.role).icon}</span>
+              <span>{getPortalInfo(user.role).label}</span>
+            </Link>
+          )}
         </nav>
 
-        {/* 3. Utility Group: Language, Role Switcher, Wallet / Get Started */}
+        {/* 3. Utility Group: Language, Active Auth Session / Log In, Wallet */}
         <div className="flex items-center gap-2 shrink-0">
           {/* Language Selector */}
           <div className="relative">
             <button
-              onClick={() => {
-                setLangMenuOpen(!langMenuOpen);
-                setRoleMenuOpen(false);
-              }}
+              onClick={() => setLangMenuOpen(!langMenuOpen)}
               className="h-9 px-2.5 rounded-full border border-[#E1E6DA] bg-white hover:bg-[#EEF3E6] text-xs font-bold text-[#121714] flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
               title="Select Language"
             >
@@ -163,70 +183,28 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </div>
 
-          {/* User Profile / Portal Switcher */}
+          {/* User Session Profile & Strict Logout */}
           {user ? (
-            <div className="relative">
-              <button
-                onClick={() => {
-                  setRoleMenuOpen(!roleMenuOpen);
-                  setLangMenuOpen(false);
-                }}
-                className="h-9 px-3 rounded-full border border-[#E1E6DA] bg-white hover:bg-[#EEF3E6] text-xs font-bold text-[#121714] flex items-center gap-1.5 transition-all cursor-pointer shadow-xs max-w-[160px]"
-                title="Switch Portal"
-              >
-                <span>{user.avatarIcon}</span>
-                <span className="truncate">{user.name.split(" ")[0]}</span>
-                <span className="text-[9px] uppercase px-1.5 py-0.5 rounded-full bg-[#EEF3E6] text-[#6AB547]">
+            <div className="flex items-center gap-1.5 bg-white border border-[#E1E6DA] rounded-full p-1 pl-2.5 shadow-xs">
+              <span className="text-sm">{user.avatarIcon}</span>
+              <div className="hidden md:flex flex-col text-left leading-tight pr-1">
+                <span className="text-[11px] font-extrabold text-[#121714] truncate max-w-[110px]">
+                  {user.name.split(" ")[0]}
+                </span>
+                <span className="text-[9px] font-bold uppercase text-[#6AB547]">
                   {user.role}
                 </span>
-                <ChevronDown className="w-3.5 h-3.5 text-[#5B665F]" />
-              </button>
+              </div>
 
-              {roleMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white border border-[#E1E6DA] shadow-2xl py-2 z-50">
-                  <div className="px-4 py-2 border-b border-[#F1EFE6]">
-                    <p className="text-[10px] uppercase font-bold text-[#5B665F]">
-                      Active Portal
-                    </p>
-                    <p className="font-bold text-xs text-[#121714]">{user.name}</p>
-                  </div>
-                  <div className="py-1 text-xs">
-                    <button
-                      onClick={() => {
-                        login("farmer");
-                        setRoleMenuOpen(false);
-                        navigate("/farmer");
-                      }}
-                      className="w-full text-left px-4 py-2 hover:bg-[#EEF3E6] flex items-center gap-2 text-[#121714] cursor-pointer"
-                    >
-                      <span>🌾</span>
-                      <span>Farmer Portal</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        login("seller");
-                        setRoleMenuOpen(false);
-                        navigate("/seller");
-                      }}
-                      className="w-full text-left px-4 py-2 hover:bg-[#EEF3E6] flex items-center gap-2 text-[#121714] cursor-pointer"
-                    >
-                      <span>🏢</span>
-                      <span>Breeder Hub</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        login("admin");
-                        setRoleMenuOpen(false);
-                        navigate("/admin");
-                      }}
-                      className="w-full text-left px-4 py-2 hover:bg-[#EEF3E6] flex items-center gap-2 text-[#121714] cursor-pointer"
-                    >
-                      <span>🛡️</span>
-                      <span>CA Console</span>
-                    </button>
-                  </div>
-                </div>
-              )}
+              {/* Strict Logout Button */}
+              <button
+                onClick={handleLogout}
+                title="Log Out completely"
+                className="h-7 px-2.5 rounded-full bg-[#FDF2F0] hover:bg-[#D8503F] text-[#D8503F] hover:text-white text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer"
+              >
+                <LogOut className="w-3 h-3" />
+                <span className="hidden sm:inline">Log out</span>
+              </button>
             </div>
           ) : (
             <Link to="/login">
@@ -267,6 +245,25 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
         <div className="lg:hidden mt-2 p-4 rounded-3xl bg-[#F7F8F3] border border-[#E1E6DA] shadow-xl space-y-2 animate-in fade-in duration-150">
+          {user && (
+            <div className="p-3 bg-white rounded-2xl border border-[#E1E6DA] mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">{user.avatarIcon}</span>
+                <div>
+                  <p className="text-xs font-extrabold text-[#121714]">{user.name}</p>
+                  <p className="text-[10px] font-bold text-[#6AB547] uppercase">{user.role} Portal</p>
+                </div>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="px-2.5 py-1 rounded-full bg-[#FDF2F0] text-[#D8503F] text-xs font-bold flex items-center gap-1"
+              >
+                <LogOut className="w-3 h-3" />
+                <span>Logout</span>
+              </button>
+            </div>
+          )}
+
           {navLinks.map((link) => (
             <Link
               key={link.path}
@@ -278,7 +275,25 @@ export const Navbar: React.FC<NavbarProps> = ({
             </Link>
           ))}
 
+          {user && (
+            <Link
+              to={getPortalInfo(user.role).path}
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-4 py-2.5 rounded-2xl text-xs font-extrabold bg-[#EEF3E6] text-[#2E6F40]"
+            >
+              Go to {getPortalInfo(user.role).label}
+            </Link>
+          )}
+
           <div className="pt-2 border-t border-[#E1E6DA] flex flex-col gap-2">
+            {!user && (
+              <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                <PillButton variant="primary" size="sm" className="w-full">
+                  Log In to Portal
+                </PillButton>
+              </Link>
+            )}
+
             {!isWalletConnected && (
               <PillButton
                 variant="dark"
