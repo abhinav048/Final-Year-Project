@@ -1,198 +1,137 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@500;600;700;800;900&display=swap');
 
-body {
-  background-color: #07130b;
-  color: #f1f5f9;
-  font-family: 'Inter', system-ui, sans-serif;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: 'Outfit', sans-serif;
-  letter-spacing: -0.02em;
-  color: inherit;
-}
-
-/* Glassmorphic Navbar (Dark Forest Theme) */
-.glass-nav {
-  background: rgba(7, 19, 11, 0.92);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(72, 167, 65, 0.2);
-}
-
-.glass-card {
-  background: rgba(10, 28, 16, 0.85);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(72, 167, 65, 0.2);
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4);
-}
-
-.gradient-hero {
-  background: radial-gradient(circle at 10% 20%, rgba(72, 167, 65, 0.16) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(72, 167, 65, 0.10) 0%, transparent 45%),
-    radial-gradient(circle at 50% 50%, rgba(72, 167, 65, 0.05) 0%, transparent 50%),
-    #07130b;
-}
-
-.badge-demo {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.25rem 0.625rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  background-color: rgba(72, 167, 65, 0.15);
-  color: #48A741;
-  border: 1px solid rgba(72, 167, 65, 0.3);
-}
-
-/* Attractive CTA Buttons with Sheen Sweep */
-.btn-cta-emerald {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, #059669 0%, #10b981 50%, #047857 100%);
-  box-shadow: 0 4px 18px -2px rgba(16, 185, 129, 0.35);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.btn-cta-emerald:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px -2px rgba(16, 185, 129, 0.5);
-}
-
-.btn-cta-emerald::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
-  transition: 0.6s;
-}
-
-.btn-cta-emerald:hover::after {
-  left: 100%;
-}
-
-.btn-cta-white {
-  position: relative;
-  overflow: hidden;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.btn-cta-white:hover {
-  transform: translateY(-2px);
-  border-color: #94a3b8;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-}
-
-/* Keyframe Animations */
-@keyframes floatSlow {
-
-  0%,
-  100% {
-    transform: translateY(0px);
+@layer base {
+  :root {
+    --bg-backdrop-start: #0F2A1D;
+    --bg-backdrop-end: #1E4D2B;
+    --bg-sheet: #F7F8F3;
+    --bg-sage: #EEF3E6;
+    --bg-sand: #F1EFE6;
+    --color-primary: #6AB547;
+    --color-primary-hover: #5AA23A;
+    --color-primary-pressed: #4D8E31;
+    --color-deep-green: #163A24;
+    --color-ink: #121714;
+    --color-ink-muted: #5B665F;
+    --color-border: #E1E6DA;
+    --shadow-sheet: 0 8px 30px rgba(15, 42, 29, 0.08);
   }
 
-  50% {
-    transform: translateY(-8px);
+  body {
+    background-color: #0F2A1D;
+    color: #121714;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: #121714;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
   }
 }
 
-@keyframes pulseGlow {
-
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
-  }
-
-  50% {
-    box-shadow: 0 0 0 14px rgba(16, 185, 129, 0);
-  }
+/* Page Deep Forest Green Vertical Gradient Backdrop */
+.bg-deep-backdrop {
+  background: linear-gradient(180deg, #0F2A1D 0%, #163824 45%, #1E4D2B 100%);
 }
 
-@keyframes shimmer {
+/* Sheet Layout: Warm off-white #F7F8F3 floating card */
+.sheet-surface {
+  background-color: #F7F8F3;
+  border-radius: 28px;
+  box-shadow: 0 8px 30px rgba(15, 42, 29, 0.08);
+}
+
+/* 4–6% Opacity Subtle Wave-Line Topographic SVG Pattern */
+.wave-pattern {
+  background-color: #F7F8F3;
+  background-image: url("data:image/svg+xml,%3Csvg width='180' height='180' viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 90 C 40 50, 80 130, 120 90 C 150 60, 170 110, 180 90' stroke='%23121714' stroke-width='0.7' stroke-opacity='0.045' fill='none'/%3E%3Cpath d='M0 45 C 50 15, 90 75, 135 45 C 160 25, 175 65, 180 45' stroke='%236AB547' stroke-width='0.6' stroke-opacity='0.05' fill='none'/%3E%3Cpath d='M0 135 C 45 110, 85 160, 130 135 C 155 120, 170 150, 180 135' stroke='%23121714' stroke-width='0.5' stroke-opacity='0.04' fill='none'/%3E%3Cpath d='M0 20 C 50 0, 90 40, 140 20 C 165 5, 175 30, 180 20' stroke='%236AB547' stroke-width='0.4' stroke-opacity='0.04' fill='none'/%3E%3C/svg%3E");
+}
+
+/* Alternating Section Tints */
+.tint-sage {
+  background-color: #EEF3E6;
+}
+
+.tint-sand {
+  background-color: #F1EFE6;
+}
+
+.tint-card {
+  background-color: #FFFFFF;
+}
+
+/* Pill Navigation Header */
+.pill-navbar {
+  background: rgba(247, 248, 243, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid #E1E6DA;
+}
+
+/* Leaf Line-Art Self-Drawing Animation (stroke-dashoffset) */
+@keyframes leafDraw {
   0% {
-    background-position: -200% 0;
+    stroke-dashoffset: 600;
+    opacity: 0.2;
   }
-
   100% {
-    background-position: 200% 0;
+    stroke-dashoffset: 0;
+    opacity: 0.95;
   }
 }
 
-.animate-float {
-  animation: floatSlow 4s ease-in-out infinite;
+.animate-leaf-draw {
+  stroke-dasharray: 600;
+  stroke-dashoffset: 0;
+  animation: leafDraw 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.animate-pulse-glow {
-  animation: pulseGlow 2.5s infinite;
+/* Smooth Interactive Lift */
+.hover-subtle-lift {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.animate-shimmer {
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0) 100%);
-  background-size: 200% 100%;
-  animation: shimmer 1.8s infinite;
+.hover-subtle-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(15, 42, 29, 0.08);
 }
 
-/* Card Hover Elevation */
-.hover-lift {
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.hover-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 32px -6px rgba(0, 0, 0, 0.08), 0 10px 12px -5px rgba(0, 0, 0, 0.04);
-}
-
-/* Custom scrollbars */
+/* Custom Scrollbar for Warm Light Theme */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #07130b;
+  background: #F1EFE6;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(72, 167, 65, 0.4);
+  background: #CBD4C6;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #48A741;
+  background: #6AB547;
 }
 
-/* AgroHome Topographic Wave Background */
-.topography-pattern {
-  background-color: #ffffff;
-  background-image:
-    radial-gradient(circle at 50% 0%, rgba(72, 167, 65, 0.04) 0%, transparent 60%),
-    url("data:image/svg+xml,%3Csvg width='160' height='160' viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 80 C 30 50, 60 110, 90 80 C 120 50, 140 100, 160 80' stroke='%2348a741' stroke-width='0.5' stroke-opacity='0.12' fill='none'/%3E%3Cpath d='M0 40 C 40 10, 70 65, 110 40 C 135 20, 150 55, 160 40' stroke='%2348a741' stroke-width='0.4' stroke-opacity='0.08' fill='none'/%3E%3Cpath d='M0 120 C 35 100, 65 140, 105 120 C 130 100, 145 135, 160 120' stroke='%2348a741' stroke-width='0.4' stroke-opacity='0.08' fill='none'/%3E%3Cpath d='M0 20 C 45 0, 75 40, 115 20 C 140 5, 155 30, 160 20' stroke='%2348a741' stroke-width='0.3' stroke-opacity='0.05' fill='none'/%3E%3Cpath d='M0 140 C 45 120, 75 160, 115 140 C 140 125, 155 150, 160 140' stroke='%2348a741' stroke-width='0.3' stroke-opacity='0.05' fill='none'/%3E%3C/svg%3E");
-}
-
-.text-agro-green {
-  color: #48A741;
-}
-
-.bg-agro-green {
-  background-color: #48A741;
-}
-
-.border-agro-green {
-  border-color: #48A741;
+/* Accessibility: Respect Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

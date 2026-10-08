@@ -4,28 +4,42 @@ import { fetchAnalytics } from "../api";
 import { AnalyticsData } from "../types";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
+import { PillButton } from "../components/PillButton";
+import { TagPill } from "../components/TagPill";
+import { LeafDecor } from "../components/LeafDecor";
+import { TrustScoreCard } from "../components/TrustScoreCard";
+import { StatusStepper } from "../components/StatusStepper";
+import { VerifiedBadge } from "../components/VerifiedBadge";
 import {
+  Sprout,
   ShieldCheck,
   Lock,
   ArrowRight,
+  AlertTriangle,
+  QrCode,
+  FileCheck2,
+  Sparkles,
+  Building2,
+  Check,
+  PackageCheck,
+  Truck,
   ChevronDown,
-  Boxes,
-  Activity,
   Coins,
-  Sprout,
-  Building2
+  Cpu,
+  Search,
+  Award
 } from "lucide-react";
 
 export const LandingPage: React.FC = () => {
   const [stats, setStats] = useState<AnalyticsData | null>(null);
   const [activeGuideTab, setActiveGuideTab] = useState<"farmer" | "seller">("farmer");
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
   const { login } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchAnalytics().then(setStats).catch(() => { });
+    fetchAnalytics().then(setStats).catch(() => {});
   }, []);
 
   const handlePortalQuickAccess = (role: "farmer" | "seller" | "admin", targetUrl: string) => {
@@ -38,206 +52,611 @@ export const LandingPage: React.FC = () => {
   };
 
   const faqs = [
-    { q: t("faq1Q"), a: t("faq1A") },
-    { q: t("faq2Q"), a: t("faq2A") },
-    { q: t("faq3Q"), a: t("faq3A") },
-    { q: t("faq4Q"), a: t("faq4A") },
-    { q: t("faq5Q"), a: t("faq5A") }
+    {
+      q: "What happens if the seeds fail to germinate or arrive damaged?",
+      a: "Your money is 100% safe. When you purchase certified seeds on SeedSure, your payment is held securely in an automated smart escrow contract. The breeder cannot withdraw the money. If the seed lot is defective or germination fails field tests, you click 'Raise Dispute' in your Farmer Portal, freezing the funds until our Platform Arbiter reviews the lab findings and issues a complete refund."
+    },
+    {
+      q: "How does the QR tag on physical seed bags prove authenticity?",
+      a: "Every seed bag has an immutable cryptographic QR tag. When you scan it with any smartphone camera, it fetches the original seed lot certification issued by the accredited testing laboratory. SeedSure computes the SHA-256 digital fingerprint of the document in real time and checks it against the tamper-proof blockchain registry. If even a single word or parameter was altered, the check immediately flags 'DOCUMENT CHANGED — DO NOT TRUST'."
+    },
+    {
+      q: "How can honest seed breeders improve their Reliability Score?",
+      a: "The SeedSure AI Trust Engine evaluates breeders across 5 objective dimensions: Lab Certification Ratio (25%), On-Time Delivery Fulfillment (25%), Transaction Completion Rate (20%), Verified Farmer Reviews (15%), and Dispute Loss History (15%). Breeders who consistently deliver high-germination seed lots on time earn scores up to 90–100 ('Excellent'), boosting their ranking at the top of the marketplace."
+    },
+    {
+      q: "Do farmers need cryptocurrency or technical Web3 knowledge to use SeedSure?",
+      a: "Not at all! SeedSure is built mobile-first with friendly Indian agricultural terminology. Farmers can log in with their phone number or Kisan ID, view prices with rupee references (1 ETH ≈ ₹2,80,000 INR demo rate), and test seed bags with standard phone cameras. All underlying smart escrow mechanisms run automatically behind the scenes."
+    },
+    {
+      q: "How are fraudulent sellers prevented from selling fake seeds?",
+      a: "SeedSure enforces an automatic Smart Contract Trust Gate: sellers whose AI trust score drops below the safety threshold (40/100) are instantly blocked by the smart contract from listing new seed batches or accepting escrow payments. Suspended breeders cannot bypass the system by creating new accounts, as each breeder identity requires verified credentials."
+    }
   ];
 
   return (
-    <div className="min-h-screen bg-[#07130b] text-slate-100 relative selection:bg-[#48A741] selection:text-white overflow-hidden">
-
+    <div className="space-y-0 pb-16">
       {/* ======================================================== */}
-      {/* 1. TOP DRAMATIC BACKDROP (Matching Theme & Responsive)    */}
+      {/* 1. TOP DRAMATIC BACKDROP (§11.5)                        */}
+      {/* Deep-green backdrop with tagline & oversized wordmark     */}
       {/* ======================================================== */}
-      <div className="relative pt-8 sm:pt-12 pb-16 sm:pb-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
-        {/* Subtle Ambient Green Glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] sm:w-[900px] h-64 bg-[#48A741]/15 blur-[120px] pointer-events-none"></div>
+      <section className="relative pt-12 pb-24 px-4 sm:px-6 lg:px-8 overflow-hidden text-center">
+        {/* Subtle Ambient Green Aura */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-64 bg-[#6AB547]/15 blur-[120px] pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto">
-          {/* Giant Background Typography: "SeedSure" (Fully Responsive with Seed in pure white & Sure in #48A741) */}
-          <div className="font-display font-black text-5xl sm:text-7xl md:text-8xl lg:text-[132px] tracking-tight leading-none text-white select-none opacity-95">
-            Seed<span className="text-[#48A741]">Sure</span>
+        <div className="max-w-5xl mx-auto relative z-10">
+          {/* Small Top Tagline */}
+          <p className="text-xs sm:text-sm text-[#A2B1A8] font-semibold tracking-wide mb-3 flex items-center justify-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#6AB547] animate-pulse" />
+            <span>Plant genuine seeds, secure honest harvest • Verified on Sepolia Testnet</span>
+          </p>
+
+          {/* Giant Bold Display Wordmark: "SeedSure" peeking above the sheet */}
+          <div className="font-extrabold text-7xl sm:text-9xl md:text-[130px] lg:text-[160px] tracking-tight leading-none select-none opacity-95">
+            <span className="text-white">Seed</span>
+            <span className="text-[#6AB547]">Sure</span>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* ======================================================== */}
-      {/* 2. FLOATING CURVED CARD CONTAINER (Matching Theme & Off-White Surface) */}
+      {/* 2. THE FLOATING SHEET CARD (§11.1, §11.2, §11.5)        */}
+      {/* Rounded 28px off-white #F7F8F3 card with wave pattern    */}
       {/* ======================================================== */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 -mt-8 sm:-mt-12 md:-mt-14 relative z-20 pb-16">
-        <div className="topography-pattern rounded-[28px] sm:rounded-[36px] md:rounded-[44px] shadow-2xl border border-slate-200/90 overflow-hidden relative">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 -mt-16 sm:-mt-20 relative z-20">
+        <div className="sheet-surface wave-pattern border border-[#E1E6DA] overflow-hidden relative">
 
-          {/* Topography Organic Wave Accent Lines */}
-          <div className="absolute inset-0 pointer-events-none opacity-25">
-            <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <pattern id="contourPattern" width="200" height="200" patternUnits="userSpaceOnUse">
-                  <path d="M 0,100 C 50,70 150,130 200,100" stroke="#48A741" strokeWidth="0.6" fill="none" opacity="0.3" />
-                  <path d="M 0,50 C 60,20 140,80 200,50" stroke="#48A741" strokeWidth="0.5" fill="none" opacity="0.2" />
-                  <path d="M 0,150 C 60,120 140,180 200,150" stroke="#48A741" strokeWidth="0.5" fill="none" opacity="0.2" />
-                </pattern>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#contourPattern)" />
-            </svg>
-          </div>
-
-          {/* HERO CONTENT: COMPOSITION WITH LIVE TRANSLATIONS */}
-          <div className="px-4 sm:px-10 lg:px-20 pt-10 sm:pt-16 md:pt-20 pb-12 sm:pb-20 text-center relative z-10">
-
-            {/* Pill Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 rounded-full bg-slate-950 text-white text-[10px] sm:text-[11px] font-bold tracking-wide shadow-sm mb-5 sm:mb-8 max-w-full truncate">
-              <span className="truncate">{t("heroPillBadge")}</span>
+          {/* ==================================================== */}
+          {/* HERO SECTION WITH ALTERNATING-COLOR HEADLINE         */}
+          {/* ==================================================== */}
+          <div className="px-4 sm:px-10 lg:px-16 pt-12 sm:pt-20 pb-16 sm:pb-24 text-center relative">
+            
+            {/* Hand-Drawn Line-Art Leaves in Margins (§11.3) */}
+            <div className="hidden lg:block absolute left-4 top-12 w-32 h-44 pointer-events-none">
+              <LeafDecor variant="branch" />
+            </div>
+            <div className="hidden lg:block absolute right-4 top-16 w-32 h-44 pointer-events-none">
+              <LeafDecor variant="fern" />
             </div>
 
-            {/* Main Title & Artistic Leaf Line Illustration */}
-            <div className="relative max-w-4xl mx-auto my-2">
-
-              {/* Left Fine Leaf Outline Line (Visible on xl+ screens so mobile/tablet is never crowded) */}
-              <div className="hidden xl:block absolute -left-16 top-2 w-44 h-44 pointer-events-none">
-                <svg viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-slate-900">
-                  <path
-                    d="M 30 110 C 20 80, 25 40, 75 35 C 75 75, 45 110, 30 110 Z"
-                    stroke="#1e293b"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M 32 108 C 45 80, 60 55, 73 37"
-                    stroke="#1e293b"
-                    strokeWidth="1.4"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M 30 110 C 35 125, 55 135, 95 135 L 160 135"
-                    stroke="#1e293b"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </div>
-
-              {/* Right Green Leaf Outline (Visible on xl+ screens) */}
-              <div className="hidden xl:block absolute -right-12 bottom-0 w-32 h-32 pointer-events-none">
-                <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-[#48A741]">
-                  <path
-                    d="M 70 20 C 100 35, 110 75, 80 100 C 60 100, 45 70, 70 20 Z"
-                    stroke="#48A741"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M 71 22 C 72 50, 76 75, 80 98"
-                    stroke="#48A741"
-                    strokeWidth="1.4"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M 79 100 C 70 110, 30 115, 0 115"
-                    stroke="#48A741"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </div>
-
-              {/* High-Impact 3-Line Headline with Two-Tone Theme */}
-              <h1 className="font-display font-black text-3xl sm:text-5xl md:text-6xl lg:text-[72px] tracking-tight leading-[1.12] select-none text-slate-950">
-                <span className="block text-[#48A741]">
-                  {t("heroLine1")}
-                </span>
-                <span className="block text-slate-950">
-                  {t("heroLine2")}
-                </span>
-                <span className="block text-[#48A741]">
-                  {t("heroLine3")}
-                </span>
-              </h1>
+            {/* TagPill */}
+            <div className="flex justify-center mb-6">
+              <TagPill icon={<Sparkles className="w-3.5 h-3.5 text-[#6AB547]" />}>
+                Verified seeds, protected payments
+              </TagPill>
             </div>
+
+            {/* Huge Headline that Alternates Green and Near-Black Words */}
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold leading-[1.1] tracking-tight max-w-4xl mx-auto">
+              <span className="text-[#121714]">Buy genuine seeds </span>
+              <span className="text-[#6AB547] underline decoration-[#6AB547]/30 decoration-wavy">
+                with proof,
+              </span>{" "}
+              <span className="text-[#121714]">not promises.</span>
+            </h1>
 
             {/* Subtitle */}
-            <p className="max-w-2xl mx-auto text-slate-600 text-xs sm:text-sm md:text-base font-normal leading-relaxed mt-4 sm:mt-6 mb-6 sm:mb-10 px-2">
-              {t("heroSubtitle")}
+            <p className="mt-6 text-base sm:text-lg text-[#5B665F] max-w-2xl mx-auto leading-relaxed font-normal">
+              Every seed lot is authenticated with a tamper-proof laboratory certificate on Ethereum. Your payment stays securely locked in escrow until you confirm healthy seedling viability.
             </p>
 
-            {/* Dual CTA Buttons (Responsive on Mobile and Desktop) */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto">
-              <Link
-                to="/marketplace"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-7 sm:px-8 py-3.5 rounded-full bg-[#48A741] hover:bg-[#3d9136] text-white text-xs sm:text-sm font-bold shadow-lg shadow-[#48A741]/25 hover:scale-[1.02] transition-all"
-              >
-                <span>{t("getServiceToday")}</span>
-                <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs">
-                  →
-                </div>
+            {/* Dual CTAs with Trailing Arrow Chip */}
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4">
+              <Link to="/marketplace">
+                <PillButton variant="primary" size="lg" withArrow>
+                  Browse certified seeds
+                </PillButton>
               </Link>
-
-              <a
-                href="#how-to-use"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-7 sm:px-8 py-3.5 rounded-full bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 text-xs sm:text-sm font-bold shadow-sm hover:scale-[1.02] transition-all"
-              >
-                <span>{t("exploreServices")}</span>
-                <div className="w-5 h-5 rounded-full bg-slate-950 text-white flex items-center justify-center text-xs font-black">
-                  →
-                </div>
-              </a>
+              <Link to="/verify/seed/1">
+                <PillButton variant="secondary" size="lg" withArrow>
+                  Verify a seed batch
+                </PillButton>
+              </Link>
             </div>
 
+            {/* Trust Assurance Micro-Notes */}
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-xs font-semibold text-[#5B665F]">
+              <span className="flex items-center gap-1.5">
+                <Check className="w-4 h-4 text-[#6AB547]" />
+                Zero advance risk for farmers
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Check className="w-4 h-4 text-[#6AB547]" />
+                SHA-256 cryptographic QR tags
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Check className="w-4 h-4 text-[#6AB547]" />
+                AI seller reliability gate
+              </span>
+            </div>
           </div>
 
-          {/* ======================================================== */}
-          {/* 3. ETHEREUM BLOCKCHAIN LIVE METRICS BAR                   */}
-          {/* ======================================================== */}
-          <div className="border-t border-slate-200/90 bg-slate-50/70 px-4 sm:px-12 py-6 sm:py-8 relative z-10">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-
-              <div className="text-center sm:text-left p-2">
-                <div className="flex items-center justify-center sm:justify-start gap-1.5 text-[#48A741] font-bold text-xs uppercase tracking-wider">
+          {/* ==================================================== */}
+          {/* TRUST-STAT STRIP (§11.5)                             */}
+          {/* ==================================================== */}
+          <div className="tint-sage border-y border-[#E1E6DA] px-4 sm:px-10 py-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center sm:text-left">
+              <div className="p-3">
+                <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-bold uppercase tracking-wider text-[#6AB547]">
                   <Coins className="w-4 h-4" />
-                  <span>{t("metricEscrow")}</span>
+                  <span>Payment Protected</span>
                 </div>
-                <p className="font-display font-black text-xl sm:text-3xl text-slate-900 mt-1">
+                <p className="text-2xl sm:text-3xl font-black text-[#121714] mt-1">
                   Ξ {stats?.activeEscrowEth || "4.85"} ETH
                 </p>
-                <p className="text-[10px] sm:text-[11px] text-slate-500">{t("metricEscrowSub")}</p>
+                <p className="text-[11px] text-[#5B665F]">
+                  ≈ ₹13,58,000 INR held safely in escrow
+                </p>
               </div>
 
-              <div className="text-center sm:text-left p-2">
-                <div className="flex items-center justify-center sm:justify-start gap-1.5 text-blue-600 font-bold text-xs uppercase tracking-wider">
+              <div className="p-3">
+                <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-bold uppercase tracking-wider text-[#2F8F83]">
                   <ShieldCheck className="w-4 h-4" />
-                  <span>{t("metricBatches")}</span>
+                  <span>Lab Certified Lots</span>
                 </div>
-                <p className="font-display font-black text-xl sm:text-3xl text-slate-900 mt-1">
-                  {stats?.certifiedBatches || 9} Lots
+                <p className="text-2xl sm:text-3xl font-black text-[#121714] mt-1">
+                  {stats?.certifiedBatches || 9} Batches
                 </p>
-                <p className="text-[10px] sm:text-[11px] text-slate-500">{t("metricBatchesSub")}</p>
+                <p className="text-[11px] text-[#5B665F]">
+                  100% tamper-verified on blockchain
+                </p>
               </div>
 
-              <div className="text-center sm:text-left p-2">
-                <div className="flex items-center justify-center sm:justify-start gap-1.5 text-amber-600 font-bold text-xs uppercase tracking-wider">
-                  <Activity className="w-4 h-4" />
-                  <span>{t("metricTrust")}</span>
+              <div className="p-3">
+                <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-bold uppercase tracking-wider text-[#E9A93B]">
+                  <Building2 className="w-4 h-4" />
+                  <span>Accredited Breeders</span>
                 </div>
-                <p className="font-display font-black text-xl sm:text-3xl text-slate-900 mt-1">
-                  {stats?.avgTrustScore || 88}/100
+                <p className="text-2xl sm:text-3xl font-black text-[#121714] mt-1">
+                  {stats?.totalSellers || 3} Institutes
                 </p>
-                <p className="text-[10px] sm:text-[11px] text-slate-500">{t("metricTrustSub")}</p>
+                <p className="text-[11px] text-[#5B665F]">
+                  Audited by Certification Authority
+                </p>
               </div>
 
-              <div className="text-center sm:text-left p-2">
-                <div className="flex items-center justify-center sm:justify-start gap-1.5 text-purple-600 font-bold text-xs uppercase tracking-wider">
-                  <Boxes className="w-4 h-4" />
-                  <span>{t("metricNetwork")}</span>
+              <div className="p-3">
+                <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-bold uppercase tracking-wider text-[#2E9E57]">
+                  <Award className="w-4 h-4" />
+                  <span>Farmer Satisfaction</span>
                 </div>
-                <p className="font-display font-black text-xl sm:text-3xl text-slate-900 mt-1 font-mono">
-                  Chain 31337
+                <p className="text-2xl sm:text-3xl font-black text-[#121714] mt-1">
+                  98.4%
                 </p>
-                <p className="text-[10px] sm:text-[11px] text-slate-500">{t("metricNetworkSub")}</p>
+                <p className="text-[11px] text-[#5B665F]">
+                  Zero dispute loss on certified seeds
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* ==================================================== */}
+          {/* THE PROBLEM: 3 CARDS (§11.5)                         */}
+          {/* ==================================================== */}
+          <div className="px-4 sm:px-10 lg:px-16 py-16 sm:py-20">
+            <div className="text-center max-w-2xl mx-auto mb-12">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#D8503F]">
+                The Agricultural Crisis
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-black text-[#121714] mt-1">
+                Why Millions of Farmers Suffer Crop Loss Every Season
+              </h2>
+              <p className="text-xs sm:text-sm text-[#5B665F] mt-2">
+                Traditional seed supply chains leave farmers completely unprotected against counterfeits and delayed deliveries.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="p-7 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs hover-subtle-lift space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-[#FDF1F0] border border-[#F7B8B2] flex items-center justify-center text-[#D8503F]">
+                  <AlertTriangle className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-extrabold text-[#121714]">
+                  30%+ Spurious & Fake Seeds
+                </h3>
+                <p className="text-xs text-[#5B665F] leading-relaxed">
+                  Unscrupulous traders pack grain leftovers into branded bags. By the time crops fail to germinate, the seller has disappeared with the money.
+                </p>
               </div>
 
+              <div className="p-7 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs hover-subtle-lift space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-[#FEF9EE] border border-[#FADFA8] flex items-center justify-center text-[#E9A93B]">
+                  <Coins className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-extrabold text-[#121714]">
+                  100% Advance Payment Scams
+                </h3>
+                <p className="text-xs text-[#5B665F] leading-relaxed">
+                  Farmers are forced to pay before seeing the seed bags. When batches arrive damaged or with low germination, sellers refuse refunds.
+                </p>
+              </div>
+
+              <div className="p-7 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs hover-subtle-lift space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-[#EEF3E6] border border-[#D2ECC3] flex items-center justify-center text-[#6AB547]">
+                  <FileCheck2 className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-extrabold text-[#121714]">
+                  Photocopied Lab Certificates
+                </h3>
+                <p className="text-xs text-[#5B665F] leading-relaxed">
+                  Paper tags and test certificates are easily forged using basic printers. Farmers have no quick way to verify test numbers in real time.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* ==================================================== */}
+          {/* HOW IT WORKS: 4-STEP ILLUSTRATED FLOW (§11.5)         */}
+          {/* ==================================================== */}
+          <div id="how-it-works" className="tint-sand border-y border-[#E1E6DA] px-4 sm:px-10 lg:px-16 py-16 sm:py-20">
+            <div className="text-center max-w-2xl mx-auto mb-12">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#6AB547]">
+                Simplified 4-Step Process
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-black text-[#121714] mt-1">
+                How SeedSure Guarantees Quality & Fair Payouts
+              </h2>
+              <p className="text-xs sm:text-sm text-[#5B665F] mt-2">
+                Automated smart contracts replace blind trust with cryptographic certainty.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                {
+                  step: "01",
+                  title: "Certified Breeder Lists Lot",
+                  desc: "Government-accredited laboratories inspect germination %, purity, and vigor. The cryptographic document hash is locked on Ethereum.",
+                  icon: FileCheck2
+                },
+                {
+                  step: "02",
+                  title: "Payment Held Safely",
+                  desc: "Farmer orders seed quantity. Funds are locked non-custodially in the smart escrow contract. The breeder cannot withdraw prematurely.",
+                  icon: Lock
+                },
+                {
+                  step: "03",
+                  title: "Scan QR Bag Tag",
+                  desc: "When the seed bag arrives, the farmer scans the physical QR tag. SeedSure re-hashes the lab file with SHA-256 to prove authenticity.",
+                  icon: QrCode
+                },
+                {
+                  step: "04",
+                  title: "Confirm & Release",
+                  desc: "Farmer verifies healthy seedling sprouting and clicks 'Confirm Delivery'. The escrow transfers payment and boosts the breeder's score.",
+                  icon: Sprout
+                }
+              ].map((item) => {
+                const ItemIcon = item.icon;
+                return (
+                  <div
+                    key={item.step}
+                    className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs relative"
+                  >
+                    <span className="text-2xl font-black text-[#E1E6DA] font-mono">
+                      {item.step}
+                    </span>
+                    <div className="w-10 h-10 rounded-xl bg-[#EEF3E6] text-[#6AB547] flex items-center justify-center my-3">
+                      <ItemIcon className="w-5 h-5" />
+                    </div>
+                    <h4 className="text-base font-extrabold text-[#121714]">
+                      {item.title}
+                    </h4>
+                    <p className="text-xs text-[#5B665F] mt-2 leading-relaxed">
+                      {item.desc}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ==================================================== */}
+          {/* TRUST SCORE EXPLAINER WITH LIVE CARD (§11.5)         */}
+          {/* ==================================================== */}
+          <div id="trust-score" className="px-4 sm:px-10 lg:px-16 py-16 sm:py-20">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+              <div className="lg:col-span-6 space-y-4">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#6AB547]">
+                  AI Multi-Factor Trust Engine
+                </span>
+                <h2 className="text-3xl sm:text-4xl font-black text-[#121714] leading-tight">
+                  Seller Reliability Calculated from Real Facts, Not Advertisements
+                </h2>
+                <p className="text-sm text-[#5B665F] leading-relaxed">
+                  Unlike traditional e-commerce reviews which can be bought or faked with bots, SeedSure calculates seller scores mathematically across 5 verified vectors:
+                </p>
+
+                <div className="space-y-2.5 text-xs text-[#121714]">
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-[#EEF3E6]">
+                    <Check className="w-4 h-4 text-[#6AB547] shrink-0" />
+                    <span><strong>Lab Certification Ratio (25%):</strong> Validated laboratory testing reports</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-[#EEF3E6]">
+                    <Check className="w-4 h-4 text-[#6AB547] shrink-0" />
+                    <span><strong>On-Time Logistics (25%):</strong> Proven delivery within promised dates</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-[#EEF3E6]">
+                    <Check className="w-4 h-4 text-[#6AB547] shrink-0" />
+                    <span><strong>Smart Escrow Gate (&lt;40):</strong> Sellers below 40 are automatically blocked</span>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <Link to="/marketplace">
+                    <PillButton variant="primary" size="md" withArrow>
+                      View Top Rated Breeders
+                    </PillButton>
+                  </Link>
+                </div>
+              </div>
+
+              <div className="lg:col-span-6">
+                <TrustScoreCard
+                  score={92}
+                  sellerName="Punjab Agricultural Research Council (PARC)"
+                  isVerified={true}
+                  totalOrders={520}
+                  metrics={{
+                    labCertificationRatio: 0.98,
+                    fulfillmentRate: 0.99,
+                    completionRate: 0.97,
+                    farmerRating: 4.9,
+                    disputeLossRate: 0.01
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ==================================================== */}
+          {/* ESCROW PROTECTION EXPLAINER WITH STEPPER (§11.5)     */}
+          {/* ==================================================== */}
+          <div className="tint-sage border-y border-[#E1E6DA] px-4 sm:px-10 lg:px-16 py-16 sm:py-20">
+            <div className="max-w-3xl mx-auto text-center mb-10">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#6AB547]">
+                Non-Custodial Smart Escrow
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-black text-[#121714] mt-1">
+                Zero Advance Risk for Seed Buyers
+              </h2>
+              <p className="text-xs sm:text-sm text-[#5B665F] mt-2">
+                Click any milestone in the order timeline below to see how the smart contract protects your harvest payment at each step.
+              </p>
+            </div>
+
+            <StatusStepper currentStep="escrowed" />
+          </div>
+
+          {/* ==================================================== */}
+          {/* SEED VERIFICATION / QR TAG SECTION (§11.5)           */}
+          {/* ==================================================== */}
+          <div className="px-4 sm:px-10 lg:px-16 py-16 sm:py-20">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+              <div className="lg:col-span-6">
+                <div className="p-8 rounded-[24px] bg-white border border-[#E1E6DA] shadow-xs space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#5B665F] uppercase">
+                      Physical Bag Security Tag
+                    </span>
+                    <VerifiedBadge isValid={true} showDetails={true} />
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-[#F7F8F3] border border-[#E1E6DA] flex items-center gap-4">
+                    <div className="w-20 h-20 bg-white p-2 rounded-xl border border-[#E1E6DA] flex items-center justify-center shrink-0">
+                      <QrCode className="w-16 h-16 text-[#121714]" />
+                    </div>
+                    <div className="text-xs space-y-1">
+                      <p className="font-extrabold text-[#121714]">
+                        Wheat HD-2967 (Foundation Seed)
+                      </p>
+                      <p className="text-[#5B665F]">Lot #PB-2026-0819</p>
+                      <p className="font-mono text-[10px] text-[#6AB547]">
+                        SHA-256: 0x9f4a...d7b2 (Verified)
+                      </p>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-[#5B665F] leading-relaxed">
+                    Test the verification tool with your device camera or upload a test certificate to witness real-time cryptographic hash confirmation.
+                  </p>
+
+                  <Link to="/verify/seed/1" className="inline-block">
+                    <PillButton variant="dark" size="sm" withArrow>
+                      Launch Real-Time Tamper Scanner
+                    </PillButton>
+                  </Link>
+                </div>
+              </div>
+
+              <div className="lg:col-span-6 space-y-4">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#6AB547]">
+                  Instant Cryptographic Check
+                </span>
+                <h2 className="text-3xl sm:text-4xl font-black text-[#121714] leading-tight">
+                  One Scan with Any Smartphone Detects Counterfeits Instantly
+                </h2>
+                <p className="text-sm text-[#5B665F] leading-relaxed">
+                  Seed bags labeled with SeedSure QR codes cannot be forged. Even if a counterfeiter changes a single number (e.g. changing germination rate from 70% to 95%), the computed SHA-256 fingerprint changes entirely and fails the blockchain verification.
+                </p>
+
+                <div className="p-4 rounded-2xl bg-[#EEF3E6] border border-[#D2ECC3] text-xs text-[#121714] space-y-1">
+                  <p className="font-bold flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-[#2E9E57]" />
+                    <span>No Special Scanner App Needed</span>
+                  </p>
+                  <p className="text-[#5B665F]">
+                    Works with standard iPhone or Android camera apps, opening the public verification portal directly.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ==================================================== */}
+          {/* FOR FARMERS / FOR SELLERS TABS (§11.5)               */}
+          {/* ==================================================== */}
+          <div className="tint-sand border-y border-[#E1E6DA] px-4 sm:px-10 lg:px-16 py-16 sm:py-20">
+            <div className="text-center max-w-xl mx-auto mb-10">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#5B665F]">
+                Tailored Experiences
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-black text-[#121714] mt-1">
+                Built for Both Seed Buyers & Honest Producers
+              </h2>
+              
+              <div className="inline-flex p-1.5 rounded-full bg-white border border-[#E1E6DA] mt-6 shadow-xs">
+                <button
+                  onClick={() => setActiveGuideTab("farmer")}
+                  className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    activeGuideTab === "farmer"
+                      ? "bg-[#6AB547] text-white shadow-xs"
+                      : "text-[#5B665F] hover:text-[#121714]"
+                  }`}
+                >
+                  For Farmers (Seed Buyers)
+                </button>
+                <button
+                  onClick={() => setActiveGuideTab("seller")}
+                  className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    activeGuideTab === "seller"
+                      ? "bg-[#121714] text-white shadow-xs"
+                      : "text-[#5B665F] hover:text-[#121714]"
+                  }`}
+                >
+                  For Breeders & Sellers (Producers)
+                </button>
+              </div>
+            </div>
+
+            {activeGuideTab === "farmer" ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2">
+                  <div className="text-xs font-bold text-[#6AB547] uppercase">Step 1</div>
+                  <h4 className="font-extrabold text-[#121714]">Browse Certified Seed Varieties</h4>
+                  <p className="text-xs text-[#5B665F]">Inspect laboratory germination %, genetic purity, and seller reliability score before purchasing.</p>
+                </div>
+                <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2">
+                  <div className="text-xs font-bold text-[#6AB547] uppercase">Step 2</div>
+                  <h4 className="font-extrabold text-[#121714]">Safe Escrow Protection</h4>
+                  <p className="text-xs text-[#5B665F]">Payment is safely locked in smart contract until you receive the seed bags and test seedling viability.</p>
+                </div>
+                <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2">
+                  <div className="text-xs font-bold text-[#6AB547] uppercase">Step 3</div>
+                  <h4 className="font-extrabold text-[#121714]">Raise Dispute if Defective</h4>
+                  <p className="text-xs text-[#5B665F]">Click 'Raise Dispute' anytime if germination fails to freeze funds for an arbitration refund.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2">
+                  <div className="text-xs font-bold text-[#121714] uppercase">Step 1</div>
+                  <h4 className="font-extrabold text-[#121714]">Institutional Accreditation</h4>
+                  <p className="text-xs text-[#5B665F]">Submit research credentials and obtain Certification Authority verification on-chain.</p>
+                </div>
+                <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2">
+                  <div className="text-xs font-bold text-[#121714] uppercase">Step 2</div>
+                  <h4 className="font-extrabold text-[#121714]">Upload Lab Test Certificates</h4>
+                  <p className="text-xs text-[#5B665F]">Smart contracts generate cryptographic QR tags to label your physical seed packages.</p>
+                </div>
+                <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2">
+                  <div className="text-xs font-bold text-[#121714] uppercase">Step 3</div>
+                  <h4 className="font-extrabold text-[#121714]">Instant Payout & Score Boost</h4>
+                  <p className="text-xs text-[#5B665F]">When delivery is confirmed, smart escrow unlocks payment automatically and boosts your trust score.</p>
+                </div>
+              </div>
+            )}
+
+            <div className="text-center mt-8">
+              <PillButton
+                variant={activeGuideTab === "farmer" ? "primary" : "dark"}
+                size="md"
+                withArrow
+                onClick={() =>
+                  handlePortalQuickAccess(
+                    activeGuideTab === "farmer" ? "farmer" : "seller",
+                    activeGuideTab === "farmer" ? "/farmer" : "/seller"
+                  )
+                }
+              >
+                {activeGuideTab === "farmer" ? "Launch Farmer Portal" : "Launch Breeder Hub"}
+              </PillButton>
+            </div>
+          </div>
+
+          {/* ==================================================== */}
+          {/* FAQ ACCORDION (§11.5)                                */}
+          {/* ==================================================== */}
+          <div id="faq" className="px-4 sm:px-10 lg:px-16 py-16 sm:py-20">
+            <div className="text-center max-w-2xl mx-auto mb-12">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#5B665F]">
+                Clear Answers
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-black text-[#121714] mt-1">
+                Frequently Asked Questions
+              </h2>
+            </div>
+
+            <div className="max-w-3xl mx-auto space-y-3">
+              {faqs.map((faq, index) => {
+                const isOpen = openFaq === index;
+                return (
+                  <div
+                    key={index}
+                    className="p-5 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs transition-all"
+                  >
+                    <button
+                      onClick={() => toggleFaq(index)}
+                      className="w-full text-left flex items-center justify-between gap-4 cursor-pointer"
+                    >
+                      <span className="text-sm font-extrabold text-[#121714]">
+                        {faq.q}
+                      </span>
+                      <ChevronDown
+                        className={`w-4 h-4 text-[#5B665F] shrink-0 transition-transform ${
+                          isOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                    {isOpen && (
+                      <p className="mt-3 pt-3 border-t border-[#F1EFE6] text-xs text-[#5B665F] leading-relaxed">
+                        {faq.a}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ==================================================== */}
+          {/* CTA BAND IN DEEP GREEN (§11.5)                      */}
+          {/* ==================================================== */}
+          <div className="bg-[#163A24] text-white px-6 sm:px-12 py-16 sm:py-20 text-center relative overflow-hidden">
+            <div className="max-w-3xl mx-auto relative z-10 space-y-5">
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/10 text-[#6AB547] text-xs font-bold border border-white/10">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Join the Honest Agricultural Network</span>
+              </div>
+              <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
+                Start Purchasing Certified Seeds with Zero Upfront Risk Today
+              </h2>
+              <p className="text-xs sm:text-sm text-[#A2B1A8] max-w-xl mx-auto leading-relaxed">
+                Connect with accredited breeders across India and protect every rupee of your hard-earned harvest investment.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                <Link to="/marketplace">
+                  <PillButton variant="primary" size="lg" withArrow>
+                    Explore Seed Marketplace
+                  </PillButton>
+                </Link>
+                <Link to="/login">
+                  <PillButton variant="secondary" size="lg">
+                    Login with Kisan ID
+                  </PillButton>
+                </Link>
+              </div>
             </div>
           </div>
 
@@ -245,480 +664,45 @@ export const LandingPage: React.FC = () => {
       </div>
 
       {/* ======================================================== */}
-      {/* 4. DEDICATED HOW TO USE SECTION: FARMER & SELLER GUIDE   */}
+      {/* 3. DEEP GREEN FOOTER (§11.5)                            */}
       {/* ======================================================== */}
-      <section id="how-to-use" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 relative z-10 text-white">
-
-        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
-          <span className="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#48A741]/20 text-[#48A741] border border-[#48A741]/30">
-            {t("howToUseBadge")}
-          </span>
-          <h2 className="font-display font-black text-2xl sm:text-4xl md:text-5xl text-white mt-3">
-            {t("howToUseHeading")}
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-300 mt-2 px-2">
-            {t("howToUseSub")}
-          </p>
-
-          {/* Interactive Role Tabs */}
-          <div className="inline-flex p-1.5 rounded-2xl bg-[#0a1f11]/90 border border-[#48A741]/25 shadow-xl mt-6 sm:mt-8 w-full sm:w-auto">
-            <button
-              onClick={() => setActiveGuideTab("farmer")}
-              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold transition-all ${activeGuideTab === "farmer"
-                ? "bg-[#48A741] text-white shadow-lg shadow-[#48A741]/30"
-                : "text-slate-400 hover:text-white"
-                }`}
-            >
-              <Sprout className="w-4 h-4 shrink-0" />
-              <span>{t("tabFarmer")}</span>
-            </button>
-            <button
-              onClick={() => setActiveGuideTab("seller")}
-              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold transition-all ${activeGuideTab === "seller"
-                ? "bg-[#48A741] text-white shadow-lg shadow-[#48A741]/30"
-                : "text-slate-400 hover:text-white"
-                }`}
-            >
-              <Building2 className="w-4 h-4 shrink-0" />
-              <span>{t("tabSeller")}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Tab 1: Farmer Workflow */}
-        {activeGuideTab === "farmer" && (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-
-              {/* Step 1 */}
-              <div className="p-5 sm:p-6 bg-[#0a1f11]/90 border border-[#48A741]/25 hover:border-[#48A741]/60 rounded-2xl transition-all group flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="w-8 h-8 rounded-xl bg-[#48A741]/20 text-[#48A741] flex items-center justify-center font-black text-xs">
-                      01
-                    </span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Discovery
-                    </span>
-                  </div>
-                  <h3 className="font-display font-bold text-base text-white mb-2">
-                    {t("fStep1Title")}
-                  </h3>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    {t("fStep1Desc")}
-                  </p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-[#48A741]/20 text-[10px] font-mono text-[#48A741]">
-                  AI Trust Engine &gt;= 40
-                </div>
+      <footer className="bg-[#163A24] text-white pt-12 pb-8 px-4 sm:px-6 lg:px-8 mt-12 border-t border-[#2A4D35]">
+        <div className="max-w-7xl mx-auto space-y-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-8 border-b border-[#2A4D35]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#6AB547] text-white flex items-center justify-center font-bold">
+                <Sprout className="w-6 h-6" />
               </div>
-
-              {/* Step 2 */}
-              <div className="p-5 sm:p-6 bg-[#0a1f11]/90 border border-[#48A741]/25 hover:border-[#48A741]/60 rounded-2xl transition-all group flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-black text-xs">
-                      02
-                    </span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Smart Escrow
-                    </span>
-                  </div>
-                  <h3 className="font-display font-bold text-base text-white mb-2">
-                    {t("fStep2Title")}
-                  </h3>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    {t("fStep2Desc")}
-                  </p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-[#48A741]/20 text-[10px] font-mono text-blue-400">
-                  Marketplace.createOrder()
-                </div>
+              <div>
+                <span className="font-extrabold text-xl tracking-tight text-white">
+                  Seed<span className="text-[#6AB547]">Sure</span>
+                </span>
+                <p className="text-[11px] text-[#A2B1A8]">
+                  Smart Seed Quality & Seller Trust Platform in AgriTech
+                </p>
               </div>
-
-              {/* Step 3 */}
-              <div className="p-5 sm:p-6 bg-[#0a1f11]/90 border border-[#48A741]/25 hover:border-[#48A741]/60 rounded-2xl transition-all group flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-xs">
-                      03
-                    </span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Inspection
-                    </span>
-                  </div>
-                  <h3 className="font-display font-bold text-base text-white mb-2">
-                    {t("fStep3Title")}
-                  </h3>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    {t("fStep3Desc")}
-                  </p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-[#48A741]/20 text-[10px] font-mono text-amber-400">
-                  SHA-256 Tamper Check
-                </div>
-              </div>
-
-              {/* Step 4 */}
-              <div className="p-5 sm:p-6 bg-[#0a1f11]/90 border border-[#48A741]/25 hover:border-[#48A741]/60 rounded-2xl transition-all group flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-xs">
-                      04
-                    </span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Settlement
-                    </span>
-                  </div>
-                  <h3 className="font-display font-bold text-base text-white mb-2">
-                    {t("fStep4Title")}
-                  </h3>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    {t("fStep4Desc")}
-                  </p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-[#48A741]/20 text-[10px] font-mono text-emerald-400">
-                  confirmDelivery() / dispute()
-                </div>
-              </div>
-
-              {/* Step 5 */}
-              <div className="p-5 sm:p-6 bg-[#0a1f11]/90 border border-[#48A741]/25 hover:border-[#48A741]/60 rounded-2xl transition-all group flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-black text-xs">
-                      05
-                    </span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Reputation
-                    </span>
-                  </div>
-                  <h3 className="font-display font-bold text-base text-white mb-2">
-                    {t("fStep5Title")}
-                  </h3>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    {t("fStep5Desc")}
-                  </p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-[#48A741]/20 text-[10px] font-mono text-purple-400">
-                  submitFeedback(1-5 ★)
-                </div>
-              </div>
-
             </div>
 
-            {/* Quick Demo CTA Card */}
-            <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-[#0a2012] to-[#07130b] border border-[#48A741]/30 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#48A741] text-white flex items-center justify-center font-bold shrink-0">
-                  🌾
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm text-white">{t("farmerCtaTitle")}</h4>
-                  <p className="text-xs text-slate-300">{t("farmerCtaDesc")}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => handlePortalQuickAccess("farmer", "/marketplace")}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#48A741] hover:bg-[#3d9136] text-white text-xs font-bold shadow-md transition-all shrink-0"
-              >
-                <span>{t("farmerCtaBtn")}</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
+            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-[#E1E6DA]">
+              <Award className="w-4 h-4 text-[#6AB547]" />
+              <span>Target IEEE Research Prototype • Ethereum Sepolia Testnet</span>
             </div>
           </div>
-        )}
 
-        {/* Tab 2: Seller & Breeder Workflow */}
-        {activeGuideTab === "seller" && (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-
-              {/* Step 1 */}
-              <div className="p-5 sm:p-6 bg-[#0a1f11]/90 border border-[#48A741]/25 hover:border-[#48A741]/60 rounded-2xl transition-all group flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-black text-xs">
-                      01
-                    </span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Onboarding
-                    </span>
-                  </div>
-                  <h3 className="font-display font-bold text-base text-white mb-2">
-                    {t("bStep1Title")}
-                  </h3>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    {t("bStep1Desc")}
-                  </p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-[#48A741]/20 text-[10px] font-mono text-blue-400">
-                  SellerRegistry.registerSeller()
-                </div>
-              </div>
-
-              {/* Step 2 */}
-              <div className="p-5 sm:p-6 bg-[#0a1f11]/90 border border-[#48A741]/25 hover:border-[#48A741]/60 rounded-2xl transition-all group flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-xs">
-                      02
-                    </span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Registration
-                    </span>
-                  </div>
-                  <h3 className="font-display font-bold text-base text-white mb-2">
-                    {t("bStep2Title")}
-                  </h3>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    {t("bStep2Desc")}
-                  </p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-[#48A741]/20 text-[10px] font-mono text-emerald-400">
-                  SeedRegistry.registerBatch()
-                </div>
-              </div>
-
-              {/* Step 3 */}
-              <div className="p-5 sm:p-6 bg-[#0a1f11]/90 border border-[#48A741]/25 hover:border-[#48A741]/60 rounded-2xl transition-all group flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-xs">
-                      03
-                    </span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Audit
-                    </span>
-                  </div>
-                  <h3 className="font-display font-bold text-base text-white mb-2">
-                    {t("bStep3Title")}
-                  </h3>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    {t("bStep3Desc")}
-                  </p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-[#48A741]/20 text-[10px] font-mono text-amber-400">
-                  certifyBatch(batchId)
-                </div>
-              </div>
-
-              {/* Step 4 */}
-              <div className="p-5 sm:p-6 bg-[#0a1f11]/90 border border-[#48A741]/25 hover:border-[#48A741]/60 rounded-2xl transition-all group flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-black text-xs">
-                      04
-                    </span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Fulfillment
-                    </span>
-                  </div>
-                  <h3 className="font-display font-bold text-base text-white mb-2">
-                    {t("bStep4Title")}
-                  </h3>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    {t("bStep4Desc")}
-                  </p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-[#48A741]/20 text-[10px] font-mono text-indigo-400">
-                  shipOrder(orderId, tracking)
-                </div>
-              </div>
-
-              {/* Step 5 */}
-              <div className="p-5 sm:p-6 bg-[#0a1f11]/90 border border-[#48A741]/25 hover:border-[#48A741]/60 rounded-2xl transition-all group flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="w-8 h-8 rounded-xl bg-teal-500/20 text-teal-400 flex items-center justify-center font-black text-xs">
-                      05
-                    </span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Growth
-                    </span>
-                  </div>
-                  <h3 className="font-display font-bold text-base text-white mb-2">
-                    {t("bStep5Title")}
-                  </h3>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    {t("bStep5Desc")}
-                  </p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-[#48A741]/20 text-[10px] font-mono text-teal-400">
-                  TrustScoreUpdated (+Score)
-                </div>
-              </div>
-
-            </div>
-
-            {/* Quick Demo CTA Card */}
-            <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-[#0a2012] to-[#07130b] border border-[#48A741]/30 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#48A741] text-white flex items-center justify-center font-bold shrink-0">
-                  🏢
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm text-white">{t("breederCtaTitle")}</h4>
-                  <p className="text-xs text-slate-300">{t("breederCtaDesc")}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => handlePortalQuickAccess("seller", "/seller")}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#48A741] hover:bg-[#3d9136] text-white text-xs font-bold shadow-md transition-all shrink-0"
-              >
-                <span>{t("breederCtaBtn")}</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
-
-      </section>
-
-      {/* ======================================================== */}
-      {/* 5. HOW SEEDSURE WORKS: 3 ETHEREUM PROTECTION PILLARS     */}
-      {/* ======================================================== */}
-      <section id="how-it-works" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 relative z-10 text-white">
-
-        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-14">
-          <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#48A741]/20 text-[#48A741] border border-[#48A741]/30">
-            {t("archBadge")}
-          </span>
-          <h2 className="font-display font-black text-2xl sm:text-4xl md:text-5xl text-white mt-3">
-            {t("archHeading")}
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-300 mt-2 px-2">
-            {t("archSub")}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-          {/* Card 1 */}
-          <div className="p-6 sm:p-7 bg-[#0a1f11]/90 border border-[#48A741]/25 hover:border-[#48A741]/60 rounded-3xl transition-all group">
-            <div className="w-12 h-12 rounded-2xl bg-[#48A741]/20 text-[#48A741] flex items-center justify-center mb-5 font-black text-lg group-hover:scale-105 transition-transform">
-              01
-            </div>
-            <h3 className="font-display font-bold text-lg text-white mb-2">
-              {t("pillar1Title")}
-            </h3>
-            <p className="text-xs text-slate-300 leading-relaxed mb-4">
-              {t("pillar1Desc")}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#A2B1A8]">
+            <p>
+              Built for Farmer Protection & Seed Viability • Solidity + Ethers v6 + ML Multi-Factor Trust
             </p>
-            <div className="text-[11px] font-mono text-[#48A741] bg-[#07160d] p-2.5 rounded-xl border border-[#48A741]/30">
-              SHA256(Document) == OnChainHash
+            <div className="flex items-center gap-5">
+              <Link to="/marketplace" className="hover:text-white transition-colors">Marketplace</Link>
+              <Link to="/farmer" className="hover:text-white transition-colors">Farmer Portal</Link>
+              <Link to="/seller" className="hover:text-white transition-colors">Breeder Hub</Link>
+              <Link to="/admin" className="hover:text-white transition-colors">CA Console</Link>
+              <Link to="/design-system" className="hover:text-white transition-colors">Design System</Link>
             </div>
           </div>
-
-          {/* Card 2 */}
-          <div className="p-6 sm:p-7 bg-[#0a1f11]/90 border border-[#48A741]/25 hover:border-[#48A741]/60 rounded-3xl transition-all group">
-            <div className="w-12 h-12 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center mb-5 font-black text-lg group-hover:scale-105 transition-transform">
-              02
-            </div>
-            <h3 className="font-display font-bold text-lg text-white mb-2">
-              {t("pillar2Title")}
-            </h3>
-            <p className="text-xs text-slate-300 leading-relaxed mb-4">
-              {t("pillar2Desc")}
-            </p>
-            <div className="text-[11px] font-mono text-blue-400 bg-[#07160d] p-2.5 rounded-xl border border-blue-900/50">
-              msg.value locked in smart contract
-            </div>
-          </div>
-
-          {/* Card 3 */}
-          <div className="p-6 sm:p-7 bg-[#0a1f11]/90 border border-[#48A741]/25 hover:border-[#48A741]/60 rounded-3xl transition-all group">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-5 font-black text-lg group-hover:scale-105 transition-transform">
-              03
-            </div>
-            <h3 className="font-display font-bold text-lg text-white mb-2">
-              {t("pillar3Title")}
-            </h3>
-            <p className="text-xs text-slate-300 leading-relaxed mb-4">
-              {t("pillar3Desc")}
-            </p>
-            <div className="text-[11px] font-mono text-amber-400 bg-[#07160d] p-2.5 rounded-xl border border-amber-900/50">
-              confirmDelivery() → transfer to seller
-            </div>
-          </div>
-
         </div>
-
-      </section>
-
-      {/* ======================================================== */}
-      {/* 6. ETHEREUM SMART CONTRACT SUITE DIRECTORY PREVIEW        */}
-      {/* ======================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 relative z-10 text-white">
-        <div className="p-6 sm:p-10 rounded-3xl bg-gradient-to-r from-[#0a1f11] to-[#07130b] border border-[#48A741]/30 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#48A741] animate-pulse"></span>
-              <span className="text-xs font-bold uppercase tracking-wider text-[#48A741]">
-                {t("bannerBadge")}
-              </span>
-            </div>
-            <h3 className="font-display font-black text-xl sm:text-3xl text-white">
-              {t("bannerTitle")}
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-xl">
-              {t("bannerDesc")}
-            </p>
-          </div>
-
-          <Link
-            to="/blockchain"
-            className="w-full sm:w-auto shrink-0 flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-[#48A741] hover:bg-[#3d9136] text-white text-xs sm:text-sm font-bold shadow-lg shadow-[#48A741]/25 hover:scale-105 transition-all"
-          >
-            <Boxes className="w-4 h-4" />
-            <span>{t("openExplorerBtn")}</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-      </section>
-
-      {/* ======================================================== */}
-      {/* 7. FREQUENTLY ASKED QUESTIONS (ACCORDION)                */}
-      {/* ======================================================== */}
-      <section id="faqs" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 relative z-10 text-white">
-        <div className="text-center mb-8 sm:mb-10">
-          <span className="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#0a1f11] text-[#48A741] border border-[#48A741]/30">
-            {t("faqBadge")}
-          </span>
-          <h2 className="font-display font-black text-2xl sm:text-4xl text-white mt-3">
-            {t("faqHeading")}
-          </h2>
-        </div>
-
-        <div className="space-y-3">
-          {faqs.map((faq, idx) => (
-            <div
-              key={idx}
-              className={`rounded-2xl border transition-all ${openFaq === idx
-                ? "bg-[#0a2213] border-[#48A741]/60 shadow-lg"
-                : "bg-[#0a1f11]/90 border-[#48A741]/25 hover:border-[#48A741]/50"
-                }`}
-            >
-              <button
-                onClick={() => toggleFaq(idx)}
-                className="w-full text-left p-4 sm:p-5 flex items-center justify-between gap-4 transition-colors"
-              >
-                <span className="font-display font-bold text-sm text-white">{faq.q}</span>
-                <ChevronDown
-                  className={`w-4 h-4 text-[#48A741] shrink-0 transition-transform ${openFaq === idx ? "rotate-180" : ""
-                    }`}
-                />
-              </button>
-              {openFaq === idx && (
-                <div className="px-4 sm:px-5 pb-5 pt-1 text-xs text-slate-200 leading-relaxed border-t border-[#48A741]/20 animate-in fade-in duration-150">
-                  {faq.a}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
-
+      </footer>
     </div>
   );
 };

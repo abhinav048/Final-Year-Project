@@ -21,6 +21,9 @@ import { formatAddress } from "../web3";
 import deployedConfig from "../contracts/deployedContracts.json";
 import { verifyBatchOnChain, checkBlockchainStatus } from "../services/blockchain";
 import { useLanguage } from "../context/LanguageContext";
+import { PillButton } from "../components/PillButton";
+import { TagPill } from "../components/TagPill";
+import { VerifiedBadge } from "../components/VerifiedBadge";
 
 export const BlockchainPage: React.FC = () => {
   const { t } = useLanguage();
@@ -63,60 +66,54 @@ export const BlockchainPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 10000);
-    return () => clearInterval(interval);
   }, []);
 
-  const handleCopy = (text: string, id: string) => {
+  const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    setCopiedAddress(id);
+    setCopiedAddress(text);
     setTimeout(() => setCopiedAddress(null), 2000);
   };
 
-  const handleRunVerification = async () => {
+  const handleRunVerifyTestbench = async () => {
     setVerifying(true);
+    setVerifyResult(null);
     try {
-      const genuineHash =
-        selectedBatchId === 1
-          ? "0x98f2b7405232817865219586113b28499268f700412852683935178696894017"
-          : "0x38e819b168926942095819749102839481759284759281749581729487519284";
-
-      const hashToTest = simulateTamper
-        ? "0xbaad00000000000000000000000000000000000000000000000000000000dead"
-        : genuineHash;
-
-      const res = await verifyBatchOnChain(selectedBatchId, hashToTest);
-      setVerifyResult({
-        ...res,
-        testedHash: hashToTest,
-        tampered: simulateTamper
-      });
+      const testHash = simulateTamper
+        ? "0x0000000000000000000000000000000000000000000000000000000000000000"
+        : "0x98f5a432b876543210fedcba9876543210fedcba9876543210fedcba98765432";
+      const result = await verifyBatchOnChain(selectedBatchId, testHash);
+      setVerifyResult(result);
     } catch (err: any) {
-      alert("Verification failed: " + err.message);
+      setVerifyResult({
+        success: false,
+        valid: false,
+        tampered: true,
+        error: err.message
+      });
     } finally {
       setVerifying(false);
     }
   };
 
-  const contractList = [
+  const contractRegistry = [
+    {
+      name: "SeedRegistry",
+      address: deployedConfig.contracts.SeedRegistry,
+      purpose: "Immutable seed lot certification catalogue and SHA-256 certificate hashes.",
+      solFile: "SeedRegistry.sol",
+      methods: ["registerBatch", "certifyBatch", "verifyBatch", "revokeBatch"]
+    },
     {
       name: "SellerRegistry",
       address: deployedConfig.contracts.SellerRegistry,
-      purpose: "Breeder identity accreditation, CA verification status, and fulfillment metric ledger.",
+      purpose: "Breeder identity registration and Certification Authority accreditation.",
       solFile: "SellerRegistry.sol",
       methods: ["registerSeller", "verifySeller", "suspendSeller", "getSeller"]
     },
     {
-      name: "SeedRegistry",
-      address: deployedConfig.contracts.SeedRegistry,
-      purpose: "Immutable seed lot registration, lab quality parameters, and SHA-256 certificate hashes.",
-      solFile: "SeedRegistry.sol",
-      methods: ["registerBatch", "certifyBatch", "revokeBatch", "verifyBatch"]
-    },
-    {
       name: "TrustScoreRegistry",
       address: deployedConfig.contracts.TrustScoreRegistry,
-      purpose: "Decentralized oracle storing dynamic multi-factor trust scores & canonical feature hashes.",
+      purpose: "Dynamic AI multi-factor trust scores with mathematical audit vectors.",
       solFile: "TrustScoreRegistry.sol",
       methods: ["updateTrustScore", "getTrustScore", "meetsTrustThreshold"]
     },
@@ -142,355 +139,173 @@ export const BlockchainPage: React.FC = () => {
       : transactions.filter((tx) => tx.contract.toLowerCase().includes(filterContract.toLowerCase()));
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-in fade-in duration-300 text-slate-100">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6">
+      <div className="sheet-surface wave-pattern border border-[#E1E6DA] p-6 sm:p-10 shadow-sheet space-y-8">
 
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#48A741]/20">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#48A741] to-emerald-950 text-white flex items-center justify-center shadow-md shadow-[#48A741]/25">
-              <Boxes className="w-5 h-5 text-white" />
+        {/* Page Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#E1E6DA]">
+          <div>
+            <div className="flex items-center gap-2">
+              <TagPill icon={<Boxes className="w-3.5 h-3.5 text-[#6AB547]" />}>
+                Ethereum Sepolia / Local EVM Ledger
+              </TagPill>
+            </div>
+            <h1 className="font-extrabold text-2xl sm:text-3xl text-[#121714] mt-2">
+              Ethereum Escrow Explorer & Contract Testbench
+            </h1>
+            <p className="text-xs sm:text-sm text-[#5B665F] mt-1">
+              Real-time audit log of Ethereum smart contracts, block heights, and escrow transactions
+            </p>
+          </div>
+
+          <PillButton
+            variant="secondary"
+            size="sm"
+            icon={<RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />}
+            onClick={loadData}
+          >
+            Refresh Ledger
+          </PillButton>
+        </div>
+
+        {/* Network Stats Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="p-5 bg-white border border-[#E1E6DA] rounded-[20px] shadow-xs flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#EEF3E6] text-[#6AB547] flex items-center justify-center font-bold">
+              <Activity className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="font-display font-black text-2xl sm:text-3xl text-white flex flex-wrap items-center gap-2">
-                <span>{t("ethereumEscrow")} Explorer</span>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#48A741]/20 text-[#48A741] border border-[#48A741]/40">
-                  Ethereum EVM Verified
-                </span>
-              </h1>
-              <p className="text-sm text-slate-400 mt-0.5">
-                {t("bannerDesc")}
+              <p className="text-[10px] text-[#5B665F] uppercase font-bold">Current Block</p>
+              <p className="font-mono font-extrabold text-lg text-[#121714]">
+                #{networkStatus?.blockNumber || 12}
               </p>
             </div>
           </div>
-        </div>
 
-        <button
-          onClick={loadData}
-          disabled={loading}
-          className="self-start md:self-auto flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#0a1f11] border border-[#48A741]/30 hover:bg-[#0f2c19] text-slate-200 hover:text-white text-xs font-bold shadow-sm transition-all"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 text-[#48A741] ${loading ? "animate-spin" : ""}`} />
-          <span>Refresh Ledger</span>
-        </button>
-      </div>
+          <div className="p-5 bg-white border border-[#E1E6DA] rounded-[20px] shadow-xs flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#EEF8F1] text-[#2E9E57] flex items-center justify-center font-bold">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-[10px] text-[#5B665F] uppercase font-bold">Chain ID</p>
+              <p className="font-mono font-extrabold text-lg text-[#121714]">
+                {networkStatus?.chainId || 31337}
+              </p>
+            </div>
+          </div>
 
-      {/* Network Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div className="p-4 bg-[#0a1f11] border border-[#48A741]/20 rounded-2xl shadow-md flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#48A741]/15 text-[#48A741] flex items-center justify-center shrink-0">
-            <Activity className="w-5 h-5" />
+          <div className="p-5 bg-white border border-[#E1E6DA] rounded-[20px] shadow-xs flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#FEF9EE] text-[#E9A93B] flex items-center justify-center font-bold">
+              <Coins className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-[10px] text-[#5B665F] uppercase font-bold">Gas Price</p>
+              <p className="font-mono font-extrabold text-lg text-[#121714]">
+                {networkStatus?.gasPriceGwei || "1.5"} Gwei
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Network Status</p>
-            <p className="text-xs sm:text-sm font-black text-white flex items-center gap-1.5 mt-0.5">
-              <span className="w-2 h-2 rounded-full bg-[#48A741] animate-pulse"></span>
-              {networkStatus?.isNodeConnected ? "Ethereum Node Active" : "Ethereum EVM Ready"}
-            </p>
-          </div>
-        </div>
 
-        <div className="p-4 bg-[#0a1f11] border border-[#48A741]/20 rounded-2xl shadow-md flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-teal-500/15 text-teal-400 flex items-center justify-center shrink-0">
-            <Layers className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Current Block</p>
-            <p className="text-xs sm:text-sm font-black text-white mt-0.5">
-              #{networkStatus?.blockNumber || 42}
-            </p>
+          <div className="p-5 bg-white border border-[#E1E6DA] rounded-[20px] shadow-xs flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#F7F8F3] text-[#2F8F83] flex items-center justify-center font-bold">
+              <Layers className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-[10px] text-[#5B665F] uppercase font-bold">Contracts</p>
+              <p className="font-mono font-extrabold text-lg text-[#121714]">5 Verified</p>
+            </div>
           </div>
         </div>
 
-        <div className="p-4 bg-[#0a1f11] border border-[#48A741]/20 rounded-2xl shadow-md flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center shrink-0">
-            <Cpu className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Chain ID</p>
-            <p className="text-xs sm:text-sm font-black text-white mt-0.5 font-mono">
-              {networkStatus?.chainId || 31337} (EVM)
-            </p>
-          </div>
-        </div>
-
-        <div className="p-4 bg-[#0a1f11] border border-[#48A741]/20 rounded-2xl shadow-md flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center shrink-0">
-            <FileCode className="w-5 h-5" />
-          </div>
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Deployed Contracts</p>
-            <p className="text-xs sm:text-sm font-black text-white mt-0.5">
-              5 Solidity Suites
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Grid: Contracts Directory + On-Chain Verifier */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-
-        {/* Left: Deployed Smart Contracts List (2 Cols) */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-display font-bold text-lg text-white flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-[#48A741]" />
-              SeedSure Ethereum Smart Contract Suite
+        {/* Smart Contracts Registry */}
+        <div className="rounded-[24px] bg-white border border-[#E1E6DA] shadow-xs overflow-hidden">
+          <div className="px-6 py-4 border-b border-[#F1EFE6]">
+            <h2 className="font-extrabold text-base text-[#121714]">
+              Verified Smart Contract Deployments
             </h2>
-            <span className="text-xs text-slate-400 font-medium">Solidity ^0.8.24 • Ethereum EVM</span>
           </div>
 
-          <div className="space-y-3">
-            {contractList.map((c) => (
-              <div
-                key={c.name}
-                className="p-4 sm:p-5 bg-[#0a1f11] border border-[#48A741]/20 rounded-2xl shadow-md hover:border-[#48A741]/50 transition-all group"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#48A741]/15 pb-3">
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-display font-bold text-white text-sm">{c.name}</span>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#07130b] text-[#48A741] border border-[#48A741]/30 font-mono">
-                        {c.solFile}
-                      </span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#48A741]/15 text-[#48A741] border border-[#48A741]/30 flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3 text-[#48A741]" />
-                        Audited
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-400 mt-1">{c.purpose}</p>
-                  </div>
-
-                  {/* Copy Address */}
-                  <div className="flex items-center gap-1.5 self-start sm:self-auto">
-                    <span className="font-mono text-xs bg-[#07130b] px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300 font-medium">
-                      {formatAddress(c.address)}
+          <div className="divide-y divide-[#F1EFE6]">
+            {contractRegistry.map((contract) => (
+              <div key={contract.name} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-[#F7F8F3] transition-colors">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-extrabold text-sm text-[#121714]">{contract.name}</span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#EEF3E6] text-[#6AB547]">
+                      {contract.solFile}
                     </span>
-                    <button
-                      onClick={() => handleCopy(c.address, c.name)}
-                      className="p-1.5 rounded-lg border border-slate-700 hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
-                      title="Copy full contract address"
-                    >
-                      <Copy className="w-3.5 h-3.5" />
-                    </button>
-                    {copiedAddress === c.name && (
-                      <span className="text-[10px] font-bold text-[#48A741] animate-in fade-in">
-                        Copied!
-                      </span>
-                    )}
                   </div>
+                  <p className="text-xs text-[#5B665F]">{contract.purpose}</p>
                 </div>
 
-                {/* Methods Tags */}
-                <div className="pt-3 flex flex-wrap items-center gap-1.5">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-1">
-                    Interface:
-                  </span>
-                  {c.methods.map((m) => (
-                    <span
-                      key={m}
-                      className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-[#48A741]/10 text-[#48A741] border border-[#48A741]/25"
-                    >
-                      {m}()
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Right: Live Interactive On-Chain Tamper Check Tool */}
-        <div className="p-5 sm:p-6 bg-[#0a1f11] border border-[#48A741]/30 rounded-2xl shadow-xl space-y-5 h-fit">
-          <div className="border-b border-[#48A741]/20 pb-3">
-            <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#48A741]/20 text-[#48A741] border border-[#48A741]/40">
-              Interactive Testbench
-            </span>
-            <h3 className="font-display font-bold text-base text-white mt-1.5 flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-[#48A741]" />
-              On-Chain Tamper Verification
-            </h3>
-            <p className="text-xs text-slate-400 mt-1">
-              Executes <code className="text-[#48A741] bg-[#07130b] px-1 py-0.5 rounded border border-slate-800">SeedRegistry.verifyBatch()</code> on the EVM smart contract to prove tamper-detection mathematically.
-            </p>
-          </div>
-
-          <div className="space-y-4 text-xs">
-            {/* Select Lot */}
-            <div>
-              <label className="font-bold text-slate-300 block mb-1">Select Seed Lot:</label>
-              <select
-                value={selectedBatchId}
-                onChange={(e) => setSelectedBatchId(Number(e.target.value))}
-                className="w-full px-3 py-2 rounded-xl border border-slate-700 bg-[#07130b] font-medium text-white focus:outline-none focus:border-[#48A741]"
-              >
-                <option value={1}>Batch #1: Wheat HD-2967 (ICAR Certified)</option>
-                <option value={2}>Batch #2: Basmati Rice Pusa 1121 (NSC Lot)</option>
-              </select>
-            </div>
-
-            {/* Adversarial Tamper Toggle */}
-            <div className="p-3.5 rounded-xl bg-amber-950/30 border border-amber-600/40 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-amber-200">Simulate Adversarial Modification:</span>
-                <input
-                  type="checkbox"
-                  checked={simulateTamper}
-                  onChange={(e) => setSimulateTamper(e.target.checked)}
-                  className="w-4 h-4 rounded text-[#48A741] accent-[#48A741] focus:ring-[#48A741] cursor-pointer"
-                />
-              </div>
-              <p className="text-[11px] text-amber-300/80">
-                {simulateTamper
-                  ? "Adversarial mode ON: Altering document hash by 1 byte to simulate forged paper certificate."
-                  : "Adversarial mode OFF: Submitting genuine laboratory certificate hash."}
-              </p>
-            </div>
-
-            {/* Execute Button */}
-            <button
-              onClick={handleRunVerification}
-              disabled={verifying}
-              className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white shadow-lg flex items-center justify-center gap-2 transition-all ${simulateTamper
-                  ? "bg-rose-600 hover:bg-rose-700 shadow-rose-600/30"
-                  : "bg-[#48A741] hover:bg-[#3da338] shadow-[#48A741]/30"
-                }`}
-            >
-              {verifying ? (
-                <>
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span>Querying EVM Smart Contract...</span>
-                </>
-              ) : (
-                <>
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>Run Smart Contract Tamper Test</span>
-                </>
-              )}
-            </button>
-
-            {/* Result Box */}
-            {verifyResult && (
-              <div
-                className={`p-4 rounded-xl border space-y-2.5 animate-in fade-in duration-200 ${verifyResult.isValid
-                    ? "bg-[#07130b] border-[#48A741]/50 text-emerald-300"
-                    : "bg-[#07130b] border-rose-500/50 text-rose-300"
-                  }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-bold uppercase tracking-wider text-[10px]">
-                    EVM Contract Response:
-                  </span>
-                  <span
-                    className={`px-2 py-0.5 rounded text-[10px] font-black tracking-wider ${verifyResult.isValid ? "bg-[#48A741]/25 text-[#48A741] border border-[#48A741]/40" : "bg-rose-950 text-rose-300 border border-rose-700"
-                      }`}
+                <div className="flex items-center gap-2">
+                  <code className="text-xs font-mono font-bold text-[#121714] bg-[#F7F8F3] px-3 py-1.5 rounded-xl border border-[#E1E6DA]">
+                    {contract.address}
+                  </code>
+                  <button
+                    onClick={() => copyToClipboard(contract.address)}
+                    className="p-2 rounded-xl bg-white border border-[#E1E6DA] hover:bg-[#EEF3E6] text-[#5B665F] cursor-pointer"
+                    title="Copy Address"
                   >
-                    {verifyResult.status}
-                  </span>
+                    <Copy className="w-3.5 h-3.5" />
+                  </button>
                 </div>
-
-                <div className="space-y-1 font-mono text-[10px] break-all">
-                  <p>
-                    <span className="font-bold text-slate-400">Tested Hash:</span> {verifyResult.testedHash.slice(0, 24)}...
-                  </p>
-                  <p>
-                    <span className="font-bold text-slate-400">On-Chain Hash:</span> {verifyResult.onChainHash.slice(0, 24)}...
-                  </p>
-                </div>
-
-                <p className="text-[11px] leading-relaxed">
-                  {verifyResult.isValid
-                    ? "✓ Cryptographic Integrity Validated. Certificate exactly matches on-chain record."
-                    : "⚠️ Forgery Detected! Document bytes hash diverges from immutable blockchain record."}
-                </p>
               </div>
-            )}
-          </div>
-        </div>
-
-      </div>
-
-      {/* Real-Time Transaction Ledger / Event Log */}
-      <div className="p-5 sm:p-6 bg-[#0a1f11] border border-[#48A741]/20 rounded-2xl shadow-xl space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#48A741]/15 pb-4">
-          <div>
-            <h2 className="font-display font-bold text-lg text-white flex items-center gap-2">
-              <Activity className="w-5 h-5 text-[#48A741]" />
-              Live On-Chain Transaction Ledger
-            </h2>
-            <p className="text-xs text-slate-400">
-              Chronological log of state-modifying smart contract events and cryptographic receipts.
-            </p>
-          </div>
-
-          {/* Filter Pills */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {["ALL", "Marketplace", "SeedRegistry", "TrustScoreRegistry", "SellerRegistry"].map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilterContract(f)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${filterContract === f
-                    ? "bg-[#48A741] text-white shadow-md shadow-[#48A741]/30"
-                    : "bg-[#07130b] text-slate-400 hover:text-white border border-slate-800"
-                  }`}
-              >
-                {f}
-              </button>
             ))}
           </div>
         </div>
 
-        {/* Transactions Table (Responsive horizontal scroll on mobile) */}
-        <div className="overflow-x-auto -mx-2 sm:mx-0">
-          <table className="w-full min-w-[620px] text-left border-collapse text-xs">
-            <thead>
-              <tr className="border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                <th className="py-2.5 px-3">Tx Hash</th>
-                <th className="py-2.5 px-3">Block</th>
-                <th className="py-2.5 px-3">Contract</th>
-                <th className="py-2.5 px-3">Action / Event</th>
-                <th className="py-2.5 px-3">Details</th>
-                <th className="py-2.5 px-3">Caller</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60 font-mono text-[11px]">
-              {filteredTxs.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-6 text-center text-slate-500 font-sans">
-                    No transactions recorded for this filter.
-                  </td>
-                </tr>
-              ) : (
-                filteredTxs.map((tx, idx) => (
-                  <tr key={tx.txHash || idx} className="hover:bg-white/5 transition-colors">
-                    <td className="py-3 px-3 text-[#48A741] font-bold truncate max-w-[140px]">
-                      {tx.txHash ? `${tx.txHash.substring(0, 10)}...${tx.txHash.substring(tx.txHash.length - 6)}` : "0x4a7...3a1"}
-                    </td>
-                    <td className="py-3 px-3 text-slate-400 font-bold">
-                      #{tx.blockNumber || idx + 1}
-                    </td>
-                    <td className="py-3 px-3 text-slate-200 font-semibold font-sans">
-                      <span className="px-2 py-0.5 rounded bg-[#07130b] text-slate-300 border border-slate-800">
-                        {tx.contract}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 font-sans font-bold text-white">
-                      {tx.action}
-                    </td>
-                    <td className="py-3 px-3 font-sans text-slate-400 max-w-[280px] truncate" title={tx.details}>
-                      {tx.details}
-                    </td>
-                    <td className="py-3 px-3 text-slate-400">
-                      {formatAddress(tx.caller)}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+        {/* Interactive Smart Contract Tamper Testbench */}
+        <div className="rounded-[24px] bg-white border border-[#E1E6DA] p-6 sm:p-8 shadow-xs space-y-4">
+          <h2 className="font-extrabold text-xl text-[#121714]">
+            Interactive Smart Contract Tamper Testbench
+          </h2>
+          <p className="text-xs text-[#5B665F]">
+            Simulate an unauthorized change to an official seed laboratory document to observe real-time cryptographic hash rejection by SeedRegistry.sol.
+          </p>
 
+          <div className="flex flex-wrap items-center gap-4 pt-2">
+            <label className="flex items-center gap-2 text-xs font-bold text-[#121714] cursor-pointer">
+              <input
+                type="checkbox"
+                checked={simulateTamper}
+                onChange={(e) => setSimulateTamper(e.target.checked)}
+                className="rounded accent-[#D8503F] cursor-pointer"
+              />
+              <span className={simulateTamper ? "text-[#D8503F]" : ""}>
+                Simulate Counterfeit Modification (Altered Certificate)
+              </span>
+            </label>
+
+            <PillButton
+              variant="primary"
+              size="sm"
+              withArrow
+              isLoading={verifying}
+              onClick={handleRunVerifyTestbench}
+            >
+              Verify On-Chain Batch
+            </PillButton>
+          </div>
+
+          {verifyResult && (
+            <div className={`p-4 rounded-2xl border text-xs space-y-1.5 ${
+              verifyResult.valid
+                ? "bg-[#EEF8F1] border-[#B8E4C7] text-[#2E9E57]"
+                : "bg-[#FDF1F0] border-[#F7B8B2] text-[#D8503F]"
+            }`}>
+              <div className="flex items-center gap-2 font-bold text-sm">
+                {verifyResult.valid ? <CheckCircle2 className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
+                <span>{verifyResult.valid ? "GENUINE: Fingerprint Matches On-Chain Registry" : "TAMPER DETECTED: Hash Mismatch Flagged!"}</span>
+              </div>
+              <p className="text-[11px] text-[#5B665F]">
+                Computed SHA-256 Hash: <code className="font-mono text-[#121714]">{verifyResult.computedHash || "0x98f...2a1"}</code>
+              </p>
+            </div>
+          )}
+        </div>
+
+      </div>
     </div>
   );
 };

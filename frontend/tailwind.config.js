@@ -7,35 +7,62 @@ export default {
   theme: {
     extend: {
       colors: {
-        forest: {
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          200: '#bbf7d0',
-          300: '#86efac',
-          400: '#4ade80',
-          500: '#22c55e',
-          600: '#16a34a',
-          700: '#15803d',
-          800: '#166534',
-          900: '#14532d',
-          950: '#052e16',
+        // Deep Backdrop Palette (#0F2A1D -> #1E4D2B)
+        backdrop: {
+          start: '#0F2A1D',
+          end: '#1E4D2B',
+          deep: '#163A24'
         },
-        earth: {
-          50: '#fffbeb',
-          100: '#fef3c7',
-          200: '#fde68a',
-          300: '#fcd34d',
-          400: '#fbbf24',
-          500: '#f59e0b',
-          600: '#d97706',
-          700: '#b45309',
-          800: '#92400e',
-          900: '#78350f',
+        // Warm Sheet / Surface
+        sheet: {
+          DEFAULT: '#F7F8F3',
+          sage: '#EEF3E6',
+          sand: '#F1EFE6',
+          card: '#FFFFFF'
+        },
+        // Primary Leaf Green
+        leaf: {
+          DEFAULT: '#6AB547',
+          hover: '#5AA23A',
+          pressed: '#4D8E31',
+          subtle: '#EEF7E8',
+          deep: '#163A24'
+        },
+        // Ink & Slate Typography
+        ink: {
+          DEFAULT: '#121714',
+          muted: '#5B665F',
+          border: '#E1E6DA',
+          soft: '#85928B'
+        },
+        // Accent Colors
+        accent: {
+          amber: '#E9A93B',
+          red: '#D8503F',
+          teal: '#2F8F83'
+        },
+        // Trust Rating Multi-Tier Colors
+        trust: {
+          excellent: '#2E9E57',
+          trusted: '#6AB547',
+          moderate: '#E9A93B',
+          low: '#E27B3C',
+          risk: '#D8503F'
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Outfit', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['"Plus Jakarta Sans"', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace']
+      },
+      borderRadius: {
+        'sheet': '28px',
+        'card': '20px'
+      },
+      boxShadow: {
+        'sheet': '0 8px 30px rgba(15, 42, 29, 0.08)',
+        'card': '0 4px 20px rgba(15, 42, 29, 0.05)',
+        'card-hover': '0 12px 32px rgba(15, 42, 29, 0.12)'
       }
     },
   },

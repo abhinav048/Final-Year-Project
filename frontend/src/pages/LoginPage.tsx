@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth, UserRole } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
+import { PillButton } from "../components/PillButton";
+import { TagPill } from "../components/TagPill";
 import {
   Sprout,
   Building2,
@@ -53,44 +55,42 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[85vh] py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center text-slate-100 animate-in fade-in duration-300">
-      <div className="max-w-2xl w-full space-y-8">
+    <div className="max-w-3xl mx-auto px-4 py-8">
+      <div className="sheet-surface wave-pattern border border-[#E1E6DA] p-6 sm:p-10 shadow-sheet space-y-8 bg-white">
 
         {/* Header Greeting */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#48A741]/15 text-[#48A741] text-xs font-bold border border-[#48A741]/30">
-            <Sparkles className="w-4 h-4 text-[#48A741]" />
-            <span>Select Your Role to Access SeedSure</span>
+          <div className="flex justify-center">
+            <TagPill icon={<Sparkles className="w-3.5 h-3.5 text-[#6AB547]" />}>
+              Select Your Role to Access SeedSure
+            </TagPill>
           </div>
-          <h1 className="font-display font-black text-3xl sm:text-4xl text-white tracking-tight">
-            Welcome to Seed<span className="text-[#48A741]">Sure</span>
+          <h1 className="font-extrabold text-3xl sm:text-4xl text-[#121714] tracking-tight">
+            Welcome to Seed<span className="text-[#6AB547]">Sure</span>
           </h1>
-          <p className="text-sm text-slate-400 max-w-md mx-auto">
+          <p className="text-xs sm:text-sm text-[#5B665F] max-w-md mx-auto">
             Choose your login section below. Each portal is customized for your specific agricultural role.
           </p>
         </div>
 
         {/* 3 Role Selection Cards / Tabs */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-
           {/* 1. Farmer Tab */}
           <button
             type="button"
             onClick={() => setActiveTab("farmer")}
-            className={`p-4 rounded-2xl border text-left transition-all duration-200 relative overflow-hidden ${activeTab === "farmer"
-                ? "bg-[#0f2c19] border-[#48A741] shadow-lg shadow-[#48A741]/20 ring-1 ring-[#48A741]/30"
-                : "bg-[#0a1f11] border-[#48A741]/20 hover:border-[#48A741]/50 hover:bg-[#0d2415]"
-              }`}
+            className={`p-4 rounded-[20px] border text-left transition-all cursor-pointer ${
+              activeTab === "farmer"
+                ? "bg-[#EEF3E6] border-[#6AB547] shadow-xs"
+                : "bg-white border-[#E1E6DA] hover:bg-[#F7F8F3]"
+            }`}
           >
-            {activeTab === "farmer" && (
-              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#48A741]"></span>
-            )}
-            <div className="w-10 h-10 rounded-xl bg-[#48A741]/20 text-[#48A741] flex items-center justify-center mb-2.5">
-              <Sprout className="w-6 h-6 text-[#48A741]" />
+            <div className="w-10 h-10 rounded-xl bg-white border border-[#E1E6DA] text-[#6AB547] flex items-center justify-center mb-2.5">
+              <Sprout className="w-6 h-6 text-[#6AB547]" />
             </div>
-            <h3 className="font-display font-bold text-sm text-white">1. {t("farmerPortal")}</h3>
-            <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">
-              Buy genuine seeds with Escrow protection.
+            <h3 className="font-extrabold text-sm text-[#121714]">1. Farmer Portal</h3>
+            <p className="text-[11px] text-[#5B665F] mt-0.5 leading-snug">
+              Buy genuine seeds with escrow protection.
             </p>
           </button>
 
@@ -98,19 +98,17 @@ export const LoginPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab("seller")}
-            className={`p-4 rounded-2xl border text-left transition-all duration-200 relative overflow-hidden ${activeTab === "seller"
-                ? "bg-[#0f2c19] border-[#48A741] shadow-lg shadow-[#48A741]/20 ring-1 ring-[#48A741]/30"
-                : "bg-[#0a1f11] border-[#48A741]/20 hover:border-[#48A741]/50 hover:bg-[#0d2415]"
-              }`}
+            className={`p-4 rounded-[20px] border text-left transition-all cursor-pointer ${
+              activeTab === "seller"
+                ? "bg-[#EEF3E6] border-[#6AB547] shadow-xs"
+                : "bg-white border-[#E1E6DA] hover:bg-[#F7F8F3]"
+            }`}
           >
-            {activeTab === "seller" && (
-              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#48A741]"></span>
-            )}
-            <div className="w-10 h-10 rounded-xl bg-[#48A741]/20 text-[#48A741] flex items-center justify-center mb-2.5">
-              <Building2 className="w-6 h-6 text-[#48A741]" />
+            <div className="w-10 h-10 rounded-xl bg-white border border-[#E1E6DA] text-[#6AB547] flex items-center justify-center mb-2.5">
+              <Building2 className="w-6 h-6 text-[#6AB547]" />
             </div>
-            <h3 className="font-display font-bold text-sm text-white">2. {t("breederHub")}</h3>
-            <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">
+            <h3 className="font-extrabold text-sm text-[#121714]">2. Breeder Hub</h3>
+            <p className="text-[11px] text-[#5B665F] mt-0.5 leading-snug">
               List seed lots, ship orders & manage trust score.
             </p>
           </button>
@@ -119,105 +117,56 @@ export const LoginPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab("admin")}
-            className={`p-4 rounded-2xl border text-left transition-all duration-200 relative overflow-hidden ${activeTab === "admin"
-                ? "bg-[#0f2c19] border-[#48A741] shadow-lg shadow-[#48A741]/20 ring-1 ring-[#48A741]/30"
-                : "bg-[#0a1f11] border-[#48A741]/20 hover:border-[#48A741]/50 hover:bg-[#0d2415]"
-              }`}
+            className={`p-4 rounded-[20px] border text-left transition-all cursor-pointer ${
+              activeTab === "admin"
+                ? "bg-[#EEF3E6] border-[#6AB547] shadow-xs"
+                : "bg-white border-[#E1E6DA] hover:bg-[#F7F8F3]"
+            }`}
           >
-            {activeTab === "admin" && (
-              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#48A741]"></span>
-            )}
-            <div className="w-10 h-10 rounded-xl bg-[#48A741]/20 text-[#48A741] flex items-center justify-center mb-2.5">
-              <Shield className="w-6 h-6 text-[#48A741]" />
+            <div className="w-10 h-10 rounded-xl bg-white border border-[#E1E6DA] text-[#6AB547] flex items-center justify-center mb-2.5">
+              <Shield className="w-6 h-6 text-[#6AB547]" />
             </div>
-            <h3 className="font-display font-bold text-sm text-white">3. {t("caConsole")}</h3>
-            <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">
+            <h3 className="font-extrabold text-sm text-[#121714]">3. CA Console</h3>
+            <p className="text-[11px] text-[#5B665F] mt-0.5 leading-snug">
               Audit lab test reports & arbitrate disputes.
             </p>
           </button>
-
         </div>
 
         {/* Login Form Container */}
-        <div className="bg-[#0a1f11] rounded-3xl border border-[#48A741]/25 shadow-2xl p-6 sm:p-8 space-y-6">
-
-          {/* Active Portal Title & Explainer */}
-          <div className="pb-4 border-b border-[#48A741]/15 flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xl">
-                  {activeTab === "farmer" ? "🌾" : activeTab === "seller" ? "🏢" : "🛡️"}
-                </span>
-                <h2 className="font-display font-black text-xl text-white">
-                  {activeTab === "farmer"
-                    ? "Farmer Login (Kisan Pravesh)"
-                    : activeTab === "seller"
-                      ? "Seed Breeder / Seller Login"
-                      : "Certification Authority (CA) Login"}
-                </h2>
-              </div>
-              <p className="text-xs text-slate-400 mt-1">
-                {activeTab === "farmer"
-                  ? "Access your escrow orders, track seed deliveries, and confirm payment releases."
-                  : activeTab === "seller"
-                    ? "Register seed batches, upload certified lab reports, and manage fulfillment."
-                    : "Authorized government agency portal for official seed batch audits & certifications."}
-              </p>
-            </div>
+        <div className="bg-[#F7F8F3] rounded-[24px] border border-[#E1E6DA] p-6 sm:p-8 space-y-6">
+          <div className="pb-4 border-b border-[#E1E6DA]">
+            <h2 className="font-extrabold text-lg text-[#121714]">
+              {activeTab === "farmer" && "Farmer Login (Seed Buyer)"}
+              {activeTab === "seller" && "Breeder Login (Seed Producer)"}
+              {activeTab === "admin" && "Certification Authority Officer Login"}
+            </h2>
+            <p className="text-xs text-[#5B665F] mt-0.5">
+              Enter your demo credentials or click one-click instant sign in below.
+            </p>
           </div>
 
-          {/* Beginner-Friendly Tip Box */}
-          <div className="p-4 rounded-2xl border border-[#48A741]/30 bg-[#07130b] text-xs flex items-start gap-3">
-            <HelpCircle className="w-5 h-5 shrink-0 mt-0.5 text-[#48A741]" />
-            <div>
-              <strong className="block font-bold text-white">
-                {activeTab === "farmer"
-                  ? "Why is it 100% safe for Farmers?"
-                  : activeTab === "seller"
-                    ? "How does SeedSure help Breeders?"
-                    : "Government Regulatory Standard"}
-              </strong>
-              <p className="mt-0.5 leading-relaxed text-slate-300 text-[11px]">
-                {activeTab === "farmer"
-                  ? "When you buy seeds on SeedSure, your payment goes into a smart lockbox (Escrow). The seller cannot take your money until you receive the seeds and verify their quality!"
-                  : activeTab === "seller"
-                    ? "Genuine breeders with high lab purity and on-time delivery earn a high AI Trust Score (up to 100), attracting more farmers and eliminating counterfeit competition."
-                    : "All certifications require cryptographic verification of the physical lab test document against its immutable SHA-256 hash."}
-              </p>
-            </div>
-          </div>
-
-          {/* Form Fields */}
-          <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs">
-
+          <form onSubmit={handleLoginSubmit} className="space-y-4">
             {activeTab === "farmer" && (
               <>
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-300 flex items-center gap-1.5">
-                    <User className="w-3.5 h-3.5 text-[#48A741]" />
-                    <span>Farmer Name:</span>
-                  </label>
+                <div>
+                  <label className="text-xs font-bold text-[#121714] block mb-1">Farmer Full Name</label>
                   <input
                     type="text"
                     required
                     value={farmerName}
                     onChange={(e) => setFarmerName(e.target.value)}
-                    placeholder="e.g. Ramesh Patel"
-                    className="w-full p-3 rounded-xl border border-slate-700 bg-[#07130b] text-white placeholder-slate-500 focus:outline-none focus:border-[#48A741] text-sm"
+                    className="w-full p-2.5 text-xs rounded-xl border border-[#E1E6DA] bg-white font-bold"
                   />
                 </div>
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-300 flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-[#48A741]" />
-                    <span>Mobile Number or Kisan ID:</span>
-                  </label>
+                <div>
+                  <label className="text-xs font-bold text-[#121714] block mb-1">Mobile Number / Kisan Credit ID</label>
                   <input
                     type="text"
                     required
                     value={farmerPhone}
                     onChange={(e) => setFarmerPhone(e.target.value)}
-                    placeholder="+91 98765-43210"
-                    className="w-full p-3 rounded-xl border border-slate-700 bg-[#07130b] text-white placeholder-slate-500 focus:outline-none focus:border-[#48A741] text-sm font-mono"
+                    className="w-full p-2.5 text-xs rounded-xl border border-[#E1E6DA] bg-white font-mono"
                   />
                 </div>
               </>
@@ -225,32 +174,24 @@ export const LoginPage: React.FC = () => {
 
             {activeTab === "seller" && (
               <>
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-300 flex items-center gap-1.5">
-                    <Building2 className="w-3.5 h-3.5 text-[#48A741]" />
-                    <span>Seed Breeder / Company Name:</span>
-                  </label>
+                <div>
+                  <label className="text-xs font-bold text-[#121714] block mb-1">Breeder Enterprise / Institute Name</label>
                   <input
                     type="text"
                     required
                     value={sellerCompany}
                     onChange={(e) => setSellerCompany(e.target.value)}
-                    placeholder="e.g. AgriGrow Seed Breeders Ltd."
-                    className="w-full p-3 rounded-xl border border-slate-700 bg-[#07130b] text-white placeholder-slate-500 focus:outline-none focus:border-[#48A741] text-sm"
+                    className="w-full p-2.5 text-xs rounded-xl border border-[#E1E6DA] bg-white font-bold"
                   />
                 </div>
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-300 flex items-center gap-1.5">
-                    <Mail className="w-3.5 h-3.5 text-[#48A741]" />
-                    <span>Business Email / License Number:</span>
-                  </label>
+                <div>
+                  <label className="text-xs font-bold text-[#121714] block mb-1">Official Breeder Email</label>
                   <input
-                    type="text"
+                    type="email"
                     required
                     value={sellerEmail}
                     onChange={(e) => setSellerEmail(e.target.value)}
-                    placeholder="breeder@agrigrow.com"
-                    className="w-full p-3 rounded-xl border border-slate-700 bg-[#07130b] text-white placeholder-slate-500 focus:outline-none focus:border-[#48A741] text-sm font-mono"
+                    className="w-full p-2.5 text-xs rounded-xl border border-[#E1E6DA] bg-white font-mono"
                   />
                 </div>
               </>
@@ -258,80 +199,49 @@ export const LoginPage: React.FC = () => {
 
             {activeTab === "admin" && (
               <>
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-300 flex items-center gap-1.5">
-                    <User className="w-3.5 h-3.5 text-[#48A741]" />
-                    <span>Officer Name:</span>
-                  </label>
+                <div>
+                  <label className="text-xs font-bold text-[#121714] block mb-1">CA Officer Name</label>
                   <input
                     type="text"
                     required
                     value={adminName}
                     onChange={(e) => setAdminName(e.target.value)}
-                    placeholder="e.g. Dr. K. Sharma"
-                    className="w-full p-3 rounded-xl border border-slate-700 bg-[#07130b] text-white placeholder-slate-500 focus:outline-none focus:border-[#48A741] text-sm"
+                    className="w-full p-2.5 text-xs rounded-xl border border-[#E1E6DA] bg-white font-bold"
                   />
                 </div>
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-300 flex items-center gap-1.5">
-                    <KeyRound className="w-3.5 h-3.5 text-[#48A741]" />
-                    <span>Government Certification Authority Badge ID:</span>
-                  </label>
+                <div>
+                  <label className="text-xs font-bold text-[#121714] block mb-1">Accredited Authority Badge ID</label>
                   <input
                     type="text"
                     required
                     value={adminId}
                     onChange={(e) => setAdminId(e.target.value)}
-                    placeholder="CA-ICAR-OFFICER-771"
-                    className="w-full p-3 rounded-xl border border-slate-700 bg-[#07130b] text-white placeholder-slate-500 focus:outline-none focus:border-[#48A741] text-sm font-mono"
+                    className="w-full p-2.5 text-xs rounded-xl border border-[#E1E6DA] bg-white font-mono"
                   />
                 </div>
               </>
             )}
 
-            <div className="space-y-1">
-              <label className="font-bold text-slate-300 flex items-center gap-1.5">
-                <Lock className="w-3.5 h-3.5 text-slate-400" />
-                <span>Security PIN / Password:</span>
-              </label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-3 rounded-xl border border-slate-700 bg-[#07130b] text-white focus:outline-none focus:border-[#48A741] text-sm font-mono"
-              />
-            </div>
-
-            {/* Standard Login Submit Button */}
-            <button
-              type="submit"
-              className="w-full py-3.5 rounded-xl bg-[#48A741] hover:bg-[#3da338] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#48A741]/25 transition-all"
-            >
-              <span>Login to {activeTab === "farmer" ? "Farmer Portal" : activeTab === "seller" ? "Breeder Hub" : "CA Console"}</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-
-            {/* Beginner 1-Click Demo Shortcut */}
-            <div className="pt-2">
-              <div className="relative flex py-2 items-center">
-                <div className="flex-grow border-t border-slate-800"></div>
-                <span className="flex-shrink mx-3 text-[11px] text-slate-400 font-semibold uppercase">Or For Easy Project Evaluation</span>
-                <div className="flex-grow border-t border-slate-800"></div>
-              </div>
-
-              <button
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+              <PillButton
                 type="button"
+                variant="secondary"
+                size="sm"
                 onClick={() => handleQuickDemoLogin(activeTab)}
-                className="w-full py-2.5 rounded-xl border border-slate-700 bg-[#07130b] hover:bg-white/5 text-slate-200 hover:text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors"
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>1-Click Instant Demo Login as {activeTab.toUpperCase()}</span>
-              </button>
+                Instant 1-Click Demo Login
+              </PillButton>
+
+              <PillButton
+                type="submit"
+                variant="primary"
+                size="md"
+                withArrow
+              >
+                Enter Portal
+              </PillButton>
             </div>
-
           </form>
-
         </div>
 
       </div>

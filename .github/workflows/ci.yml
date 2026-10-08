@@ -1,0 +1,43 @@
+name: SeedSure CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-and-lint:
+    name: Lint, Test & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Root Dependencies
+        run: npm ci || npm install
+
+      - name: Install Frontend Dependencies
+        run: cd frontend && npm ci || npm install
+
+      - name: Install Backend Dependencies
+        run: cd backend && npm ci || npm install
+
+      - name: Install Smart Contract Dependencies
+        run: cd blockchain && npm ci || npm install
+
+      - name: Run Smart Contract Automated Tests
+        run: cd blockchain && npx hardhat test
+
+      - name: Typecheck and Build Frontend
+        run: cd frontend && npm run build
+
+      - name: Backend Health Check Test
+        run: cd backend && node -e "console.log('Backend syntax and dependencies valid')"

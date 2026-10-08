@@ -9,24 +9,27 @@ import {
   Wallet,
   ChevronDown,
   LogOut,
-  LogIn,
   QrCode,
   HelpCircle,
   Building2,
   Check,
-  Boxes,
   Menu,
-  X
+  X,
+  Palette,
+  ExternalLink
 } from "lucide-react";
+import { PillButton } from "./PillButton";
 
 interface NavbarProps {
   onConnectWallet: () => void;
   isWalletConnected: boolean;
+  onOpenOnboarding?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   onConnectWallet,
-  isWalletConnected
+  isWalletConnected,
+  onOpenOnboarding
 }) => {
   const { user, logout, login } = useAuth();
   const { language, setLanguage, t } = useLanguage();
@@ -37,48 +40,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Dynamic navigation links fully translated via useLanguage
-  const getNavLinks = () => {
-    if (!user) {
-      return [
-        { label: t("marketplace"), path: "/marketplace", icon: ShoppingBag },
-        { label: t("ethereumEscrow"), path: "/blockchain", icon: Boxes },
-        { label: t("howToUse"), path: "/#how-to-use", icon: HelpCircle },
-      ];
-    }
-
-    if (user.role === "farmer") {
-      return [
-        { label: t("marketplace"), path: "/marketplace", icon: ShoppingBag },
-        { label: t("ethereumEscrow"), path: "/blockchain", icon: Boxes },
-        { label: t("howToUse"), path: "/#how-to-use", icon: HelpCircle },
-        { label: t("farmerPortal"), path: "/farmer", icon: Sprout },
-        { label: t("verifyBag"), path: "/verify/seed/1", icon: QrCode },
-      ];
-    }
-
-    if (user.role === "seller") {
-      return [
-        { label: t("marketplace"), path: "/marketplace", icon: ShoppingBag },
-        { label: t("ethereumEscrow"), path: "/blockchain", icon: Boxes },
-        { label: t("howToUse"), path: "/#how-to-use", icon: HelpCircle },
-        { label: t("breederHub"), path: "/seller", icon: Building2 },
-        { label: t("verifyBag"), path: "/verify/seed/1", icon: QrCode },
-      ];
-    }
-
-    // Admin / CA
-    return [
-      { label: t("marketplace"), path: "/marketplace", icon: ShoppingBag },
-      { label: t("ethereumEscrow"), path: "/blockchain", icon: Boxes },
-      { label: t("howToUse"), path: "/#how-to-use", icon: HelpCircle },
-      { label: t("caConsole"), path: "/admin", icon: Shield },
-      { label: t("verifyBag"), path: "/verify/seed/1", icon: QrCode },
-    ];
-  };
-
-  const navLinks = getNavLinks();
-  const activeLangObj = SUPPORTED_LANGUAGES.find((l) => l.code === language) || SUPPORTED_LANGUAGES[0];
+  const activeLangObj =
+    SUPPORTED_LANGUAGES.find((l) => l.code === language) || SUPPORTED_LANGUAGES[0];
 
   const handleNavClick = (path: string, e: React.MouseEvent) => {
     if (path.includes("#")) {
@@ -98,70 +61,76 @@ export const Navbar: React.FC<NavbarProps> = ({
     setMobileMenuOpen(false);
   };
 
-  return (
-    <header className="sticky top-0 z-40 w-full glass-nav border-b border-[#48A741]/20 bg-[#07130b]/92 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-4">
+  const navLinks = [
+    { label: "Home", path: "/" },
+    { label: "How it works", path: "/#how-it-works" },
+    { label: "Marketplace", path: "/marketplace" },
+    { label: "Trust score", path: "/#trust-score" },
+    { label: "FAQ", path: "/#faq" },
+    { label: "Design System", path: "/design-system" }
+  ];
 
-        {/* 1. Sleek Brand (Matches Theme with Seed in White & Sure in #48A741) */}
-        <Link to="/" className="flex items-center gap-2 sm:gap-2.5 group shrink-0">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-[#48A741] to-emerald-800 flex items-center justify-center text-white shadow-md shadow-[#48A741]/30 group-hover:scale-105 transition-transform">
-            <Sprout className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+  return (
+    <header className="sticky top-4 z-40 w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <div className="bg-[#F7F8F3]/95 backdrop-blur-md border border-[#E1E6DA] rounded-full px-4 sm:px-6 py-2.5 shadow-[0_4px_20px_rgba(15,42,29,0.05)] flex items-center justify-between gap-3">
+        {/* 1. Two-Tone Brand Logo */}
+        <Link to="/" className="flex items-center gap-2 group shrink-0">
+          <div className="w-9 h-9 rounded-full bg-[#EEF3E6] border border-[#D2ECC3] flex items-center justify-center text-[#6AB547] group-hover:scale-105 transition-transform">
+            <Sprout className="w-5 h-5 text-[#6AB547]" />
           </div>
-          <div className="flex items-center gap-1 sm:gap-1.5">
-            <span className="font-display font-black text-lg sm:text-xl text-white tracking-tight">
-              Seed<span className="text-[#48A741]">Sure</span>
-            </span>
-            <span className="px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-extrabold bg-[#48A741]/20 text-[#48A741] border border-[#48A741]/30 tracking-wider">
-              AGRI
+          <div className="flex items-center">
+            <span className="font-extrabold text-xl tracking-tight text-[#121714]">
+              Seed<span className="text-[#6AB547]">Sure</span>
             </span>
           </div>
         </Link>
 
-        {/* 2. Centered Segmented Navigation Pills (Visible on lg+ screens) */}
-        <nav className="hidden lg:flex items-center gap-1 bg-[#0a1f11]/80 p-1 rounded-2xl border border-[#48A741]/20 shadow-inner">
+        {/* 2. Desktop Navigation Links */}
+        <nav className="hidden lg:flex items-center gap-1">
           {navLinks.map((link) => {
-            const Icon = link.icon;
             const isActive = location.pathname === link.path;
             return (
               <Link
                 key={link.path}
                 to={link.path}
                 onClick={(e) => handleNavClick(link.path, e)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${isActive
-                    ? "bg-[#48A741] text-white shadow-md shadow-[#48A741]/30 font-bold"
-                    : "text-slate-300 hover:text-white hover:bg-white/10"
-                  }`}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                  isActive
+                    ? "text-[#121714] bg-[#EEF3E6] font-bold"
+                    : "text-[#5B665F] hover:text-[#121714] hover:bg-white/80"
+                }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : "text-[#48A741]"}`} />
-                <span>{link.label}</span>
+                {link.label}
               </Link>
             );
           })}
         </nav>
 
-        {/* 3. Utility Group: Language, Profile, Wallet (Uniform h-9 height & crisp alignment) */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-
-          {/* Language Selector Dropdown */}
+        {/* 3. Utility Group: Language, Role Switcher, Wallet / Get Started */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Language Selector */}
           <div className="relative">
             <button
               onClick={() => {
                 setLangMenuOpen(!langMenuOpen);
                 setRoleMenuOpen(false);
               }}
-              className="h-9 px-2 sm:px-2.5 rounded-xl border border-[#48A741]/25 bg-[#0a1f11]/80 hover:bg-[#0f2c19] text-xs font-bold text-slate-200 hover:text-white shadow-xs flex items-center gap-1.5 transition-all"
-              title="Select Platform Language"
+              className="h-9 px-2.5 rounded-full border border-[#E1E6DA] bg-white hover:bg-[#EEF3E6] text-xs font-bold text-[#121714] flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+              title="Select Language"
             >
-              <span className="text-sm">{activeLangObj.flag}</span>
-              <span className="hidden sm:inline font-semibold">{activeLangObj.nativeName}</span>
-              <span className="sm:hidden font-bold">{activeLangObj.code.toUpperCase()}</span>
-              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${langMenuOpen ? "rotate-180" : ""}`} />
+              <span>{activeLangObj.flag}</span>
+              <span className="hidden sm:inline">{activeLangObj.nativeName}</span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 text-[#5B665F] transition-transform ${
+                  langMenuOpen ? "rotate-180" : ""
+                }`}
+              />
             </button>
 
             {langMenuOpen && (
-              <div className="absolute right-0 mt-2 w-48 rounded-2xl bg-[#07160d] border border-[#48A741]/30 shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                <div className="px-3 py-1.5 border-b border-emerald-950/80">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <div className="absolute right-0 mt-2 w-48 rounded-2xl bg-white border border-[#E1E6DA] shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-3 py-1.5 border-b border-[#F1EFE6]">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#5B665F]">
                     Select Language / भाषा
                   </p>
                 </div>
@@ -172,15 +141,22 @@ export const Navbar: React.FC<NavbarProps> = ({
                       setLanguage(lang.code);
                       setLangMenuOpen(false);
                     }}
-                    className={`w-full text-left px-3.5 py-2 text-xs flex items-center justify-between hover:bg-[#48A741]/20 transition-colors ${language === lang.code ? "bg-[#48A741]/25 font-bold text-[#48A741]" : "text-slate-200"
-                      }`}
+                    className={`w-full text-left px-3.5 py-2 text-xs flex items-center justify-between hover:bg-[#EEF3E6] transition-colors cursor-pointer ${
+                      language === lang.code
+                        ? "bg-[#EEF3E6] font-bold text-[#6AB547]"
+                        : "text-[#121714]"
+                    }`}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-sm">{lang.flag}</span>
+                      <span>{lang.flag}</span>
                       <span>{lang.nativeName}</span>
-                      <span className="text-[10px] text-slate-400 font-normal">({lang.name})</span>
+                      <span className="text-[10px] text-[#5B665F] font-normal">
+                        ({lang.name})
+                      </span>
                     </div>
-                    {language === lang.code && <Check className="w-3.5 h-3.5 text-[#48A741]" />}
+                    {language === lang.code && (
+                      <Check className="w-3.5 h-3.5 text-[#6AB547]" />
+                    )}
                   </button>
                 ))}
               </div>
@@ -195,44 +171,36 @@ export const Navbar: React.FC<NavbarProps> = ({
                   setRoleMenuOpen(!roleMenuOpen);
                   setLangMenuOpen(false);
                 }}
-                className="h-9 px-2 sm:px-2.5 rounded-xl border border-[#48A741]/25 bg-[#0a1f11]/80 hover:bg-[#0f2c19] text-xs font-semibold text-slate-200 hover:text-white shadow-xs flex items-center gap-1.5 sm:gap-2 transition-all max-w-[140px] sm:max-w-[210px]"
-                title="Current Account & Switch Portal"
+                className="h-9 px-3 rounded-full border border-[#E1E6DA] bg-white hover:bg-[#EEF3E6] text-xs font-bold text-[#121714] flex items-center gap-1.5 transition-all cursor-pointer shadow-xs max-w-[160px]"
+                title="Switch Portal"
               >
-                <span className="text-sm shrink-0">{user.avatarIcon}</span>
-                <span className="font-bold text-white truncate text-[11px] sm:text-xs">
-                  {user.name.split(" ")[0]}
-                </span>
-                <span className="hidden sm:inline-block px-1.5 py-0.2 rounded text-[9px] uppercase font-bold bg-[#48A741]/20 text-[#48A741] border border-[#48A741]/30 shrink-0">
+                <span>{user.avatarIcon}</span>
+                <span className="truncate">{user.name.split(" ")[0]}</span>
+                <span className="text-[9px] uppercase px-1.5 py-0.5 rounded-full bg-[#EEF3E6] text-[#6AB547]">
                   {user.role}
                 </span>
-                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform ${roleMenuOpen ? "rotate-180" : ""}`} />
+                <ChevronDown className="w-3.5 h-3.5 text-[#5B665F]" />
               </button>
 
               {roleMenuOpen && (
-                <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-[#07160d] border border-[#48A741]/30 shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="px-4 py-2 border-b border-emerald-950/80">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Logged In As
+                <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white border border-[#E1E6DA] shadow-2xl py-2 z-50">
+                  <div className="px-4 py-2 border-b border-[#F1EFE6]">
+                    <p className="text-[10px] uppercase font-bold text-[#5B665F]">
+                      Active Portal
                     </p>
-                    <p className="font-bold text-xs text-white truncate">{user.name}</p>
-                    <p className="text-[10px] font-mono text-slate-400 truncate">{user.identifier}</p>
+                    <p className="font-bold text-xs text-[#121714]">{user.name}</p>
                   </div>
-
-                  <div className="py-1">
-                    <p className="px-4 py-1 text-[10px] font-bold text-slate-400 uppercase">
-                      {t("switchPortal")}
-                    </p>
+                  <div className="py-1 text-xs">
                     <button
                       onClick={() => {
                         login("farmer");
                         setRoleMenuOpen(false);
-                        navigate("/marketplace");
+                        navigate("/farmer");
                       }}
-                      className={`w-full text-left px-4 py-2 text-xs flex items-center gap-2 hover:bg-[#48A741]/20 ${user.role === "farmer" ? "text-[#48A741] font-bold bg-[#48A741]/10" : "text-slate-200"
-                        }`}
+                      className="w-full text-left px-4 py-2 hover:bg-[#EEF3E6] flex items-center gap-2 text-[#121714] cursor-pointer"
                     >
                       <span>🌾</span>
-                      <span>Farmer Portal (Buyer)</span>
+                      <span>Farmer Portal</span>
                     </button>
                     <button
                       onClick={() => {
@@ -240,11 +208,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                         setRoleMenuOpen(false);
                         navigate("/seller");
                       }}
-                      className={`w-full text-left px-4 py-2 text-xs flex items-center gap-2 hover:bg-[#48A741]/20 ${user.role === "seller" ? "text-blue-400 font-bold bg-blue-950/30" : "text-slate-200"
-                        }`}
+                      className="w-full text-left px-4 py-2 hover:bg-[#EEF3E6] flex items-center gap-2 text-[#121714] cursor-pointer"
                     >
                       <span>🏢</span>
-                      <span>Seed Breeder Hub</span>
+                      <span>Breeder Hub</span>
                     </button>
                     <button
                       onClick={() => {
@@ -252,91 +219,92 @@ export const Navbar: React.FC<NavbarProps> = ({
                         setRoleMenuOpen(false);
                         navigate("/admin");
                       }}
-                      className={`w-full text-left px-4 py-2 text-xs flex items-center gap-2 hover:bg-[#48A741]/20 ${user.role === "admin" ? "text-purple-400 font-bold bg-purple-950/30" : "text-slate-200"
-                        }`}
+                      className="w-full text-left px-4 py-2 hover:bg-[#EEF3E6] flex items-center gap-2 text-[#121714] cursor-pointer"
                     >
                       <span>🛡️</span>
-                      <span>CA & Admin Console</span>
-                    </button>
-                  </div>
-
-                  <div className="border-t border-emerald-950/80 pt-1 mt-1">
-                    <button
-                      onClick={() => {
-                        logout();
-                        setRoleMenuOpen(false);
-                        navigate("/login");
-                      }}
-                      className="w-full text-left px-4 py-2 text-xs text-rose-400 font-semibold hover:bg-rose-950/30 flex items-center gap-2"
-                    >
-                      <LogOut className="w-3.5 h-3.5" />
-                      <span>{t("logout")}</span>
+                      <span>CA Console</span>
                     </button>
                   </div>
                 </div>
               )}
             </div>
           ) : (
-            <Link
-              to="/login"
-              className="h-9 px-3 rounded-xl bg-[#48A741] hover:bg-[#3d9136] text-white text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all"
-            >
-              <LogIn className="w-3.5 h-3.5" />
-              <span>{t("login")}</span>
+            <Link to="/login">
+              <PillButton variant="secondary" size="sm">
+                Log In
+              </PillButton>
             </Link>
           )}
 
-          {/* Web3 Wallet Connect Pill */}
-          <button
-            onClick={onConnectWallet}
-            className={`h-9 px-2.5 sm:px-3 rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all ${isWalletConnected
-                ? "bg-[#48A741]/25 text-[#48A741] border border-[#48A741]/50"
-                : "bg-[#0a1f11]/80 hover:bg-[#0f2c19] text-slate-200 border border-[#48A741]/25"
-              }`}
-            title="Connect MetaMask Wallet (Optional - Demo Active)"
-          >
-            <Wallet className="w-3.5 h-3.5 text-[#48A741] shrink-0" />
-            <span className="hidden md:inline">
-              {isWalletConnected ? t("walletConnected") : t("connectWallet")}
-            </span>
-          </button>
+          {/* Wallet / Get Started Primary Action */}
+          {isWalletConnected ? (
+            <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#EEF8F1] border border-[#B8E4C7] text-[#2E9E57] text-xs font-bold shadow-xs">
+              <Wallet className="w-3.5 h-3.5" />
+              <span>Wallet Connected</span>
+            </div>
+          ) : (
+            <PillButton
+              variant="dark"
+              size="sm"
+              withArrow
+              onClick={onConnectWallet}
+              className="hidden sm:inline-flex"
+            >
+              Get Started
+            </PillButton>
+          )}
 
-          {/* Mobile Menu Toggle Button (Visible on screens < lg) */}
+          {/* Mobile Menu Hamburger */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden h-9 w-9 rounded-xl border border-[#48A741]/25 bg-[#0a1f11]/80 hover:bg-[#0f2c19] flex items-center justify-center text-slate-200 hover:text-white shadow-xs"
-            aria-label="Toggle navigation menu"
+            className="lg:hidden w-9 h-9 rounded-full bg-white border border-[#E1E6DA] flex items-center justify-center text-[#121714] cursor-pointer"
           >
-            {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
-
         </div>
       </div>
 
-      {/* Mobile Drawer Navigation (Responsive overlay with identical color theme) */}
+      {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-[#48A741]/30 bg-[#07130b] px-4 py-4 space-y-2 shadow-2xl animate-in slide-in-from-top-2 duration-150">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
-            Navigation Menu
-          </p>
-          {navLinks.map((link) => {
-            const Icon = link.icon;
-            const isActive = location.pathname === link.path;
-            return (
-              <Link
-                key={link.path}
-                to={link.path}
-                onClick={(e) => handleNavClick(link.path, e)}
-                className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${isActive
-                    ? "bg-[#48A741] text-white shadow-md shadow-[#48A741]/30"
-                    : "text-slate-300 hover:text-white hover:bg-[#0a1f11]"
-                  }`}
+        <div className="lg:hidden mt-2 p-4 rounded-3xl bg-[#F7F8F3] border border-[#E1E6DA] shadow-xl space-y-2 animate-in fade-in duration-150">
+          {navLinks.map((link) => (
+            <Link
+              key={link.path}
+              to={link.path}
+              onClick={(e) => handleNavClick(link.path, e)}
+              className="block px-4 py-2.5 rounded-2xl text-xs font-bold text-[#121714] hover:bg-[#EEF3E6]"
+            >
+              {link.label}
+            </Link>
+          ))}
+
+          <div className="pt-2 border-t border-[#E1E6DA] flex flex-col gap-2">
+            {!isWalletConnected && (
+              <PillButton
+                variant="dark"
+                size="sm"
+                withArrow
+                onClick={() => {
+                  onConnectWallet();
+                  setMobileMenuOpen(false);
+                }}
               >
-                <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-[#48A741]"}`} />
-                <span>{link.label}</span>
-              </Link>
-            );
-          })}
+                Connect Wallet
+              </PillButton>
+            )}
+            {onOpenOnboarding && (
+              <PillButton
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  onOpenOnboarding();
+                  setMobileMenuOpen(false);
+                }}
+              >
+                Beginner Tour
+              </PillButton>
+            )}
+          </div>
         </div>
       )}
     </header>

@@ -4,6 +4,9 @@ import { fetchSeedById } from "../api";
 import { SeedBatch } from "../types";
 import { TrustBadge } from "../components/TrustBadge";
 import { TamperCheckModal } from "../components/TamperCheckModal";
+import { PillButton } from "../components/PillButton";
+import { TagPill } from "../components/TagPill";
+import { VerifiedBadge } from "../components/VerifiedBadge";
 import {
   CheckCircle2,
   ShieldCheck,
@@ -13,7 +16,10 @@ import {
   ArrowRight,
   ShieldAlert,
   Hash,
-  Award
+  Award,
+  ExternalLink,
+  Share2,
+  Lock
 } from "lucide-react";
 
 export const PublicVerifyPage: React.FC = () => {
@@ -21,6 +27,7 @@ export const PublicVerifyPage: React.FC = () => {
   const [seed, setSeed] = useState<SeedBatch | null>(null);
   const [loading, setLoading] = useState(true);
   const [tamperModalOpen, setTamperModalOpen] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -32,11 +39,19 @@ export const PublicVerifyPage: React.FC = () => {
     }
   }, [id]);
 
+  const handleShare = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(window.location.href);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#07130b] flex flex-col items-center justify-center p-4 text-slate-100">
-        <div className="w-10 h-10 border-4 border-[#48A741] border-t-transparent rounded-full animate-spin mb-3"></div>
-        <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">
+      <div className="max-w-md mx-auto my-12 p-8 text-center bg-white rounded-[28px] border border-[#E1E6DA] shadow-sheet">
+        <div className="w-10 h-10 border-3 border-[#6AB547] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+        <p className="text-xs text-[#5B665F] font-bold uppercase tracking-wider">
           Querying SeedSure Blockchain Ledger...
         </p>
       </div>
@@ -45,15 +60,21 @@ export const PublicVerifyPage: React.FC = () => {
 
   if (!seed) {
     return (
-      <div className="min-h-screen bg-[#07130b] flex flex-col items-center justify-center p-4 text-center text-slate-100">
-        <ShieldAlert className="w-12 h-12 text-rose-500 mb-3" />
-        <h2 className="font-display font-black text-xl text-white">Seed Lot Record Not Found</h2>
-        <p className="text-xs text-slate-400 max-w-sm mt-1">
-          This QR code does not correspond to any registered lot on SeedSure. Beware of counterfeit packaging.
+      <div className="max-w-md mx-auto my-12 p-8 text-center bg-[#FDF1F0] rounded-[28px] border border-[#F7B8B2] shadow-sheet">
+        <ShieldAlert className="w-12 h-12 text-[#D8503F] mx-auto mb-3" />
+        <h2 className="font-black text-xl text-[#D8503F]">
+          Seed Lot Record Not Found
+        </h2>
+        <p className="text-xs text-[#5B665F] max-w-sm mt-1 mx-auto leading-relaxed">
+          This QR code does not correspond to any registered lot on SeedSure. Beware of counterfeit or untracked packaging.
         </p>
-        <Link to="/" className="mt-4 px-4 py-2 rounded-xl bg-[#48A741] hover:bg-[#3da338] text-white font-bold text-xs shadow-md shadow-[#48A741]/20">
-          Return to Platform Home
-        </Link>
+        <div className="mt-4">
+          <Link to="/">
+            <PillButton variant="primary" size="sm">
+              Return to Platform Home
+            </PillButton>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -61,143 +82,168 @@ export const PublicVerifyPage: React.FC = () => {
   const isCertified = seed.certificationStatus === "Certified";
 
   return (
-    <div className="min-h-screen bg-[#07130b] flex flex-col items-center justify-center p-4 sm:p-6 text-slate-100">
-      <div className="w-full max-w-md bg-[#0a1f11] rounded-3xl shadow-2xl border border-[#48A741]/30 overflow-hidden space-y-6 pb-6">
-
-        {/* Verification Status Header */}
+    <div className="max-w-xl mx-auto px-4 py-8">
+      <div className="sheet-surface border border-[#E1E6DA] rounded-[28px] overflow-hidden shadow-sheet bg-white">
+        {/* Verification Status Header: Big PASS / PENDING result (§11.6) */}
         <div
-          className={`p-6 text-center space-y-2 ${isCertified
-              ? "bg-gradient-to-b from-[#48A741] to-emerald-950 text-white"
-              : "bg-gradient-to-b from-amber-600 to-amber-950 text-white"
-            }`}
+          className={`p-6 sm:p-8 text-center space-y-2 border-b ${
+            isCertified
+              ? "bg-[#EEF8F1] border-[#B8E4C7] text-[#2E9E57]"
+              : "bg-[#FEF9EE] border-[#FADFA8] text-[#E9A93B]"
+          }`}
         >
-          <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center mx-auto shadow-inner border border-white/20">
+          <div
+            className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-2 shadow-xs ${
+              isCertified ? "bg-[#2E9E57] text-white" : "bg-[#E9A93B] text-white"
+            }`}
+          >
             {isCertified ? (
-              <CheckCircle2 className="w-9 h-9 text-white" />
+              <CheckCircle2 className="w-10 h-10 stroke-[2.5]" />
             ) : (
-              <AlertTriangle className="w-9 h-9 text-white" />
+              <AlertTriangle className="w-10 h-10 stroke-[2.5]" />
             )}
           </div>
 
-          <h1 className="font-display font-black text-2xl tracking-tight text-white">
+          <span className="text-[10px] font-extrabold uppercase tracking-widest block">
+            Official Seed Quality Verification Result
+          </span>
+
+          <h1 className="font-extrabold text-2xl sm:text-3xl tracking-tight text-[#121714]">
             {isCertified ? "GENUINE CERTIFIED SEED" : "VERIFICATION PENDING"}
           </h1>
-          <p className="text-xs text-slate-200/90 max-w-xs mx-auto">
+          <p className="text-xs text-[#5B665F] max-w-xs mx-auto leading-relaxed">
             {isCertified
-              ? "Cryptographically verified on immutable SeedRegistry smart contract."
+              ? "Cryptographically validated on immutable SeedRegistry smart contract."
               : "This lot is registered but certification is not yet finalized."}
           </p>
         </div>
 
         {/* Content Body */}
-        <div className="px-6 space-y-5">
-
+        <div className="p-6 sm:p-8 space-y-6">
           {/* Seed Details */}
           <div className="text-center space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#07130b] text-[#48A741] border border-[#48A741]/30">
+            <span className="text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#EEF3E6] text-[#6AB547]">
               {seed.cropType} • {seed.variety}
             </span>
-            <h2 className="font-display font-black text-2xl text-white">
+            <h2 className="font-black text-2xl text-[#121714] mt-2">
               {seed.name}
             </h2>
-            <p className="font-mono text-xs text-[#48A741] font-bold">
+            <p className="font-mono text-xs text-[#5B665F]">
               Lot #{seed.batchNumber}
             </p>
           </div>
 
           {/* Quality Metrics Grid */}
-          <div className="grid grid-cols-2 gap-2.5">
-            <div className="p-3 rounded-2xl bg-[#07130b] border border-[#48A741]/30 text-center">
-              <span className="text-[10px] font-bold text-[#48A741] uppercase">Germination</span>
-              <p className="font-display font-black text-2xl text-white">{seed.germinationRate}%</p>
-              <span className="text-[9px] text-emerald-400">Above Min ICAR Std (85%)</span>
-            </div>
-            <div className="p-3 rounded-2xl bg-[#07130b] border border-slate-800 text-center">
-              <span className="text-[10px] font-bold text-slate-400 uppercase">Genetic Purity</span>
-              <p className="font-display font-black text-2xl text-white">{seed.purity}%</p>
-              <span className="text-[9px] text-slate-400">Varietal True Type</span>
-            </div>
-            <div className="p-3 rounded-2xl bg-[#07130b] border border-slate-800 text-center">
-              <span className="text-[10px] font-bold text-slate-400 uppercase">Seed Vigor</span>
-              <p className="font-display font-black text-2xl text-white">{seed.vigor}%</p>
-              <span className="text-[9px] text-slate-400">Emergence Index</span>
-            </div>
-            <div className="p-3 rounded-2xl bg-[#07130b] border border-slate-800 text-center">
-              <span className="text-[10px] font-bold text-slate-400 uppercase">Moisture</span>
-              <p className="font-display font-black text-2xl text-white">{seed.moisture}%</p>
-              <span className="text-[9px] text-slate-400">Safe Storage Bounds</span>
-            </div>
-          </div>
-
-          {/* Breeder / Seller Card */}
-          <div className="p-3.5 rounded-2xl bg-[#07130b] border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-[10px] text-slate-400 uppercase font-bold">Registered Breeder</span>
-                <p className="text-xs font-bold text-white">{seed.sellerName}</p>
-              </div>
-              <TrustBadge score={seed.sellerTrustScore || 50} riskCategory={seed.sellerRiskCategory} size="sm" />
-            </div>
-            <div className="text-[11px] text-slate-400">
-              Accreditation: <strong className="text-slate-200">{seed.manufacturer}</strong>
-            </div>
-          </div>
-
-          {/* Cryptographic SHA-256 Hash */}
-          <div className="p-3 rounded-xl bg-[#07130b] border border-slate-800 text-slate-200 space-y-1">
-            <div className="flex items-center justify-between text-[10px] text-slate-400">
-              <span className="flex items-center gap-1 font-bold">
-                <Hash className="w-3 h-3 text-[#48A741]" />
-                Immutable SHA-256 Lab Certificate Hash:
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-3.5 rounded-2xl bg-[#EEF3E6] border border-[#D2ECC3] text-center">
+              <span className="text-[10px] font-bold text-[#6AB547] uppercase">
+                Germination
               </span>
-              <span className="text-[#48A741] font-bold">PASS</span>
+              <p className="font-black text-2xl text-[#121714]">
+                {seed.germinationRate}%
+              </p>
+              <span className="text-[10px] text-[#2E9E57] font-semibold">
+                Above ICAR Baseline (85%)
+              </span>
             </div>
-            <p className="font-mono text-[9px] text-slate-300 break-all leading-relaxed">
-              {seed.certificateHash}
-            </p>
+            <div className="p-3.5 rounded-2xl bg-[#F7F8F3] border border-[#E1E6DA] text-center">
+              <span className="text-[10px] font-bold text-[#5B665F] uppercase">
+                Genetic Purity
+              </span>
+              <p className="font-black text-2xl text-[#121714]">
+                {seed.purity}%
+              </p>
+              <span className="text-[10px] text-[#5B665F]">
+                Varietal True Type
+              </span>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-[#F7F8F3] border border-[#E1E6DA] text-center">
+              <span className="text-[10px] font-bold text-[#5B665F] uppercase">
+                Seed Vigor
+              </span>
+              <p className="font-black text-2xl text-[#121714]">
+                {seed.vigor}%
+              </p>
+              <span className="text-[10px] text-[#5B665F]">
+                Emergence Index
+              </span>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-[#F7F8F3] border border-[#E1E6DA] text-center">
+              <span className="text-[10px] font-bold text-[#5B665F] uppercase">
+                Safe Moisture
+              </span>
+              <p className="font-black text-2xl text-[#121714]">
+                {seed.moisture}%
+              </p>
+              <span className="text-[10px] text-[#5B665F]">
+                Storage Bounds
+              </span>
+            </div>
           </div>
 
-          {/* Actions */}
-          <div className="space-y-2">
-            <button
+          {/* Breeder Card */}
+          <div className="p-4 rounded-2xl bg-[#F7F8F3] border border-[#E1E6DA] flex items-center justify-between">
+            <div>
+              <span className="text-[10px] text-[#5B665F] uppercase font-bold">
+                Registered Breeder
+              </span>
+              <p className="text-xs font-bold text-[#121714]">
+                {seed.sellerName}
+              </p>
+            </div>
+            <TrustBadge
+              score={seed.sellerTrustScore || 50}
+              riskCategory={seed.sellerRiskCategory}
+              size="sm"
+            />
+          </div>
+
+          {/* Tamper Check Button */}
+          <div className="pt-2">
+            <PillButton
+              variant="dark"
+              size="md"
+              withArrow
+              className="w-full"
               onClick={() => setTamperModalOpen(true)}
-              className="w-full py-2.5 rounded-xl bg-[#48A741] hover:bg-[#3da338] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-[#48A741]/25 transition-all"
             >
-              <FileCheck2 className="w-4 h-4" />
-              <span>Run Cryptographic Tamper Test</span>
+              Test SHA-256 Tamper Security
+            </PillButton>
+          </div>
+
+          {/* Share & Traceability Info */}
+          <div className="pt-4 border-t border-[#F1EFE6] flex items-center justify-between text-xs text-[#5B665F]">
+            <button
+              onClick={handleShare}
+              className="hover:text-[#121714] font-bold flex items-center gap-1 cursor-pointer"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span>{copiedLink ? "Link Copied! ✓" : "Share Proof"}</span>
             </button>
 
             <Link
-              to={`/seed/${seed.id}`}
-              className="w-full py-2.5 rounded-xl bg-[#07130b] hover:bg-white/5 border border-slate-700 text-slate-200 hover:text-white font-bold text-xs flex items-center justify-center gap-2 transition-all"
+              to="/marketplace"
+              className="hover:text-[#6AB547] font-bold flex items-center gap-1"
             >
-              <span>View Full Specs & Escrow Details</span>
-              <ArrowRight className="w-3.5 h-3.5 text-[#48A741]" />
+              <span>Explore Marketplace</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
-
-          {/* Research Badge */}
-          <div className="text-center pt-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#48A741]/10 text-[#48A741] border border-[#48A741]/20">
-              SeedSure Prototype • Synthetic Demo Data
-            </span>
-          </div>
-
         </div>
-
       </div>
 
-      {/* Tamper Modal */}
-      <TamperCheckModal
-        batchId={seed.id}
-        batchNumber={seed.batchNumber}
-        seedName={seed.name}
-        certificateCID={seed.certificateCID}
-        certificateHash={seed.certificateHash}
-        isOpen={tamperModalOpen}
-        onClose={() => setTamperModalOpen(false)}
-      />
-
+      {/* Interactive Tamper Check Modal */}
+      {tamperModalOpen && (
+        <TamperCheckModal
+          batchId={seed.id}
+          batchNumber={seed.batchNumber}
+          seedName={seed.name}
+          certificateHash={seed.certificateHash}
+          certificateCID={seed.certificateCID}
+          isOpen={tamperModalOpen}
+          onClose={() => setTamperModalOpen(false)}
+        />
+      )}
     </div>
   );
 };

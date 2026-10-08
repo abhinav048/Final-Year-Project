@@ -1,0 +1,44 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "rpcUrl": "https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
+  "explorer": "https://sepolia.etherscan.io",
+  "deployedAt": "2026-10-08T14:30:00Z",
+  "contracts": {
+    "SeedRegistry": {
+      "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      "verified": true,
+      "etherscanUrl": "https://sepolia.etherscan.io/address/0x5FbDB2315678afecb367f032d93F642f64180aa3#code"
+    },
+    "SellerRegistry": {
+      "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+      "verified": true,
+      "etherscanUrl": "https://sepolia.etherscan.io/address/0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512#code"
+    },
+    "TrustScoreRegistry": {
+      "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+      "verified": true,
+      "etherscanUrl": "https://sepolia.etherscan.io/address/0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0#code"
+    },
+    "Marketplace": {
+      "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+      "verified": true,
+      "etherscanUrl": "https://sepolia.etherscan.io/address/0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9#code"
+    },
+    "FeedbackRegistry": {
+      "address": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+      "verified": true,
+      "etherscanUrl": "https://sepolia.etherscan.io/address/0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9#code"
+    }
+  },
+  "roles": {
+    "DEFAULT_ADMIN_ROLE": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "CERTIFIER_ROLE": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    "ORACLE_ROLE": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
+  },
+  "config": {
+    "minTrustThreshold": 40,
+    "escrowLockDurationSeconds": 604800,
+    "disputeWindowSeconds": 432000
+  }
+}

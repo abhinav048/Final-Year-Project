@@ -6,6 +6,9 @@ import { TrustExplainability } from "../components/TrustExplainability";
 import { TamperCheckModal } from "../components/TamperCheckModal";
 import { QRCodeModal } from "../components/QRCodeModal";
 import { useLanguage } from "../context/LanguageContext";
+import { PillButton } from "../components/PillButton";
+import { TagPill } from "../components/TagPill";
+import { VerifiedBadge } from "../components/VerifiedBadge";
 import {
   UserCheck,
   PlusCircle,
@@ -19,7 +22,9 @@ import {
   TrendingUp,
   X,
   Lock,
-  ExternalLink
+  ExternalLink,
+  Sparkles,
+  Award
 } from "lucide-react";
 
 interface SellerDashboardProps {
@@ -58,20 +63,17 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({ currentAddress
 
   // Tamper / QR Modal State
   const [activeInspectSeed, setActiveInspectSeed] = useState<SeedBatch | null>(null);
-  const [tamperModalOpen, setTamperModalOpen] = useState(false);
-  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [inspectModalType, setInspectModalType] = useState<"tamper" | "qr" | null>(null);
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const [sellerData, ordersData] = await Promise.all([
-        fetchSellerByAddress(currentAddress),
-        fetchOrders({ seller: currentAddress })
-      ]);
+      const sellerData = await fetchSellerByAddress(currentAddress);
       setSeller(sellerData);
+      const ordersData = await fetchOrders({ seller: currentAddress });
       setOrders(ordersData);
     } catch (err: any) {
-      console.error("Error loading seller dashboard data:", err);
+      console.error("Error loading seller portal:", err);
     } finally {
       setLoading(false);
     }
@@ -83,27 +85,26 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({ currentAddress
 
   const handleRegisterBatch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!seller) return;
     setSubmittingBatch(true);
     try {
       await registerSeedBatch({
-        sellerId: (seller as any).id || 1,
-        name: formName,
+        name: formName || "Certified Wheat HD-3226",
         cropType: formCrop,
-        variety: formVariety,
-        batchNumber: formBatchNo,
-        manufacturer: formManufacturer || seller.name,
-        harvestDate: new Date().toISOString().split("T")[0],
-        expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+        variety: formVariety || "HD-3226 High Yield",
+        batchNumber: formBatchNo || `LOT-${Math.floor(1000 + Math.random() * 9000)}`,
+        manufacturer: formManufacturer || (seller?.name || "State Seed Farm"),
         germinationRate: Number(formGermination),
         purity: Number(formPurity),
         vigor: Number(formVigor),
-        moistureContent: Number(formMoisture),
+        moisture: Number(formMoisture),
         pricePerKg: Number(formPrice),
-        availableQuantityKg: Number(formQty),
-        certificateText: formCertText
+        quantityAvailableKg: Number(formQty),
+        certificateRawText: formCertText,
+        diseaseResistance: "Rust & Blight Tolerant",
+        sellerAddress: currentAddress
       });
-      alert("Seed Lot registered successfully and cryptographic SHA-256 fingerprint anchored on Ethereum!");
+
+      alert("New seed lot registered on-chain with SHA-256 certificate hash!");
       setRegisterModalOpen(false);
       loadData();
     } catch (err: any) {
@@ -133,142 +134,213 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({ currentAddress
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-20 text-center text-slate-100">
-        <div className="inline-block w-8 h-8 border-4 border-[#48A741] border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-xs text-slate-400 mt-3 font-medium">Loading breeder credentials & listings...</p>
+      <div className="max-w-7xl mx-auto px-4 py-20 text-center">
+        <div className="inline-block w-8 h-8 border-3 border-[#6AB547] border-t-transparent rounded-full animate-spin" />
+        <p className="text-xs text-[#5B665F] mt-3 font-semibold">
+          Loading breeder credentials & listings...
+        </p>
       </div>
     );
   }
 
-  const escrowOrdersPending = orders.filter((o) => o.status === "ESCROWED");
-
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-slate-100">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6">
+      <div className="sheet-surface wave-pattern border border-[#E1E6DA] p-6 sm:p-10 shadow-sheet space-y-8">
 
-      {/* Top Banner: Breeder Profile & Trust Metrics */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-[#0a1f11]/90 border border-[#48A741]/25 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#07130b] text-[#48A741] border border-[#48A741]/30">
-              Registered Breeder
-            </span>
-            {seller?.isVerified ? (
-              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#48A741]/20 text-[#48A741] border border-[#48A741]/40 flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                CA Accredited
+        {/* Top Banner: Breeder Profile & Trust Metrics */}
+        <div className="p-6 sm:p-8 rounded-[24px] bg-white border border-[#E1E6DA] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#EEF3E6] text-[#6AB547]">
+                Registered Breeder
               </span>
-            ) : (
-              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-950/40 text-amber-300 border border-amber-600/40">
-                Pending Verification
-              </span>
-            )}
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#48A741]/20 text-[#48A741] border border-[#48A741]/30">
-              Demo Persona
-            </span>
+              {seller?.isVerified ? (
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#EEF8F1] text-[#2E9E57] border border-[#B8E4C7] flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  CA Accredited
+                </span>
+              ) : (
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#FEF9EE] text-[#E9A93B] border border-[#FADFA8]">
+                  Pending Verification
+                </span>
+              )}
+            </div>
+
+            <h1 className="font-extrabold text-2xl sm:text-3xl text-[#121714]">
+              {seller?.name || "Breeder Dashboard"}
+            </h1>
+            <p className="text-xs font-mono text-[#5B665F]">
+              {currentAddress} • {seller?.location}
+            </p>
+            <p className="text-xs text-[#5B665F] max-w-xl">
+              {seller?.description}
+            </p>
           </div>
 
-          <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-white">
-            {seller?.name || "Breeder Dashboard"}
-          </h1>
-          <p className="text-xs font-mono text-slate-400">
-            {currentAddress} • {seller?.location}
-          </p>
-          <p className="text-xs text-slate-300 max-w-xl">
-            {seller?.description}
-          </p>
+          {/* Trust Gauge & Register Batch Action */}
+          <div className="flex flex-col items-start md:items-end gap-3 shrink-0">
+            <TrustBadge score={seller?.trustScore || 50} riskCategory={seller?.riskCategory} size="lg" />
+            <PillButton
+              variant="primary"
+              size="md"
+              withArrow
+              onClick={() => setRegisterModalOpen(true)}
+            >
+              <PlusCircle className="w-4 h-4 mr-1 inline" />
+              <span>Register New Seed Lot</span>
+            </PillButton>
+          </div>
         </div>
 
-        {/* Trust Gauge & Register Batch Action */}
-        <div className="flex flex-col items-start md:items-end gap-3 shrink-0">
-          <TrustBadge score={seller?.trustScore || 50} riskCategory={seller?.riskCategory} size="lg" />
-          <button
-            onClick={() => setRegisterModalOpen(true)}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#48A741] hover:bg-[#3d9136] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-[#48A741]/25 transition-all"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>{t("bStep2Title")}</span>
-          </button>
+        {/* Operational Stats Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="p-5 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs text-center">
+            <p className="text-[11px] font-bold text-[#5B665F] uppercase">Total Orders</p>
+            <p className="font-black text-2xl text-[#121714] mt-1">{seller?.totalOrders || 0}</p>
+            <span className="text-[10px] text-[#2E9E57] font-semibold">{seller?.successfulOrders || 0} Successful</span>
+          </div>
+          <div className="p-5 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs text-center">
+            <p className="text-[11px] font-bold text-[#5B665F] uppercase">Certified Batches</p>
+            <p className="font-black text-2xl text-[#6AB547] mt-1">
+              {seller?.certifiedBatchesCount || 0} / {seller?.totalBatchesCount || 0}
+            </p>
+            <span className="text-[10px] text-[#5B665F]">CA Verified Lots</span>
+          </div>
+          <div className="p-5 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs text-center">
+            <p className="text-[11px] font-bold text-[#5B665F] uppercase">On-Time Delivery</p>
+            <p className="font-black text-2xl text-[#121714] mt-1">
+              {seller?.totalOrders ? Math.round(((seller.deliveredOrders - seller.delayedOrders * 0.5) / seller.totalOrders) * 100) : 95}%
+            </p>
+            <span className="text-[10px] text-[#5B665F]">{seller?.delayedOrders || 0} Delays Recorded</span>
+          </div>
+          <div className="p-5 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs text-center">
+            <p className="text-[11px] font-bold text-[#5B665F] uppercase">Farmer Rating</p>
+            <p className="font-black text-2xl text-[#E9A93B] mt-1">
+              {seller?.avgFarmerRating ? seller.avgFarmerRating.toFixed(1) : "4.5"} ★
+            </p>
+            <span className="text-[10px] text-[#5B665F]">{seller?.ratingCount || 0} Verified Reviews</span>
+          </div>
         </div>
-      </div>
 
-      {/* Operational Stats Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-[#0a1f11]/90 border border-[#48A741]/25 shadow-md text-center">
-          <p className="text-[11px] font-bold text-slate-400 uppercase">Total Orders</p>
-          <p className="font-display font-extrabold text-2xl text-white mt-1">{seller?.totalOrders || 0}</p>
-          <span className="text-[10px] text-[#48A741] font-semibold">{seller?.successfulOrders || 0} Successful</span>
-        </div>
-        <div className="p-4 rounded-2xl bg-[#0a1f11]/90 border border-[#48A741]/25 shadow-md text-center">
-          <p className="text-[11px] font-bold text-slate-400 uppercase">Certified Batches</p>
-          <p className="font-display font-extrabold text-2xl text-[#48A741] mt-1">
-            {seller?.certifiedBatchesCount || 0} / {seller?.totalBatchesCount || 0}
-          </p>
-          <span className="text-[10px] text-slate-400">CA Verified Lots</span>
-        </div>
-        <div className="p-4 rounded-2xl bg-[#0a1f11]/90 border border-[#48A741]/25 shadow-md text-center">
-          <p className="text-[11px] font-bold text-slate-400 uppercase">On-Time Delivery</p>
-          <p className="font-display font-extrabold text-2xl text-white mt-1">
-            {seller?.totalOrders ? Math.round(((seller.deliveredOrders - seller.delayedOrders * 0.5) / seller.totalOrders) * 100) : 95}%
-          </p>
-          <span className="text-[10px] text-slate-400">{seller?.delayedOrders || 0} Delays Recorded</span>
-        </div>
-        <div className="p-4 rounded-2xl bg-[#0a1f11]/90 border border-[#48A741]/25 shadow-md text-center">
-          <p className="text-[11px] font-bold text-slate-400 uppercase">Farmer Rating</p>
-          <p className="font-display font-extrabold text-2xl text-amber-400 mt-1">
-            {seller?.avgFarmerRating ? seller.avgFarmerRating.toFixed(1) : "4.5"} ★
-          </p>
-          <span className="text-[10px] text-slate-400">{seller?.ratingCount || 0} Verified Reviews</span>
-        </div>
-      </div>
-
-      {/* Orders To Fulfill Section */}
-      <div className="rounded-2xl bg-[#0a1f11]/90 border border-[#48A741]/25 shadow-md overflow-hidden">
-        <div className="px-6 py-4 border-b border-[#48A741]/20 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Lock className="w-5 h-5 text-amber-400" />
-            <h2 className="font-display font-bold text-base text-white">
-              Orders Awaiting Dispatch (Escrow Locked)
+        {/* Incoming Orders Requiring Shipping */}
+        <div className="rounded-[24px] bg-white border border-[#E1E6DA] shadow-xs overflow-hidden">
+          <div className="px-6 py-4 border-b border-[#F1EFE6] flex items-center justify-between">
+            <h2 className="font-extrabold text-base text-[#121714]">
+              Escrow Orders Awaiting Dispatch & QR Tagging
             </h2>
+            <span className="text-xs text-[#5B665F] font-semibold">
+              {orders.filter((o) => o.status === "ESCROWED").length} Orders Locked
+            </span>
           </div>
-          <span className="px-2.5 py-0.5 rounded-full bg-amber-950/40 text-amber-300 border border-amber-500/30 font-bold text-xs">
-            {escrowOrdersPending.length} To Ship
-          </span>
-        </div>
 
-        {escrowOrdersPending.length === 0 ? (
-          <div className="text-center py-10 text-xs text-slate-400">
-            No pending orders waiting for shipment dispatch.
-          </div>
-        ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#07130b] text-slate-300 font-semibold border-b border-[#48A741]/20">
+              <thead className="bg-[#F7F8F3] text-[#5B665F] font-bold border-b border-[#E1E6DA]">
                 <tr>
                   <th className="py-3 px-4">Order ID</th>
                   <th className="py-3 px-4">Seed Batch</th>
                   <th className="py-3 px-4">Buyer Address</th>
                   <th className="py-3 px-4">Quantity</th>
-                  <th className="py-3 px-4">Escrow Deposit</th>
+                  <th className="py-3 px-4">Locked Escrow</th>
+                  <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#48A741]/10">
-                {escrowOrdersPending.map((order) => (
-                  <tr key={order.id} className="hover:bg-[#07160d]">
-                    <td className="py-3.5 px-4 font-mono font-bold text-[#48A741]">#{order.id}</td>
-                    <td className="py-3.5 px-4 font-bold text-white">{order.seedName}</td>
-                    <td className="py-3.5 px-4 font-mono text-slate-400">
-                      {order.buyerAddress.substring(0, 6)}...{order.buyerAddress.substring(order.buyerAddress.length - 4)}
+              <tbody className="divide-y divide-[#F1EFE6]">
+                {orders.map((o) => (
+                  <tr key={o.id} className="hover:bg-[#F7F8F3] transition-colors">
+                    <td className="py-3.5 px-4 font-mono font-bold text-[#121714]">#{o.id}</td>
+                    <td className="py-3.5 px-4 font-bold text-[#121714]">{o.seedName || `Lot #${o.batchId}`}</td>
+                    <td className="py-3.5 px-4 font-mono text-[#5B665F]">
+                      {o.buyerAddress.slice(0, 6)}...{o.buyerAddress.slice(-4)}
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-slate-200">{order.quantityKg} kg</td>
-                    <td className="py-3.5 px-4 font-mono font-bold text-[#48A741]">{order.totalPriceEth} ETH</td>
+                    <td className="py-3.5 px-4 font-semibold text-[#121714]">{o.quantityKg} kg</td>
+                    <td className="py-3.5 px-4 font-extrabold text-[#121714]">{o.totalPriceEth} ETH</td>
+                    <td className="py-3.5 px-4">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#EEF3E6] text-[#6AB547]">
+                        {o.status}
+                      </span>
+                    </td>
                     <td className="py-3.5 px-4 text-right">
+                      {o.status === "ESCROWED" && (
+                        <PillButton
+                          variant="primary"
+                          size="sm"
+                          withArrow
+                          onClick={() => setShippingOrder(o)}
+                        >
+                          Ship Order
+                        </PillButton>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Breeder Seed Batches Catalogue */}
+        <div className="rounded-[24px] bg-white border border-[#E1E6DA] shadow-xs overflow-hidden">
+          <div className="px-6 py-4 border-b border-[#F1EFE6] flex items-center justify-between">
+            <h2 className="font-extrabold text-base text-[#121714]">
+              My Registered Seed Lots on Smart Contract
+            </h2>
+            <PillButton
+              variant="secondary"
+              size="sm"
+              onClick={() => setRegisterModalOpen(true)}
+            >
+              + Add Seed Batch
+            </PillButton>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-[#F7F8F3] text-[#5B665F] font-bold border-b border-[#E1E6DA]">
+                <tr>
+                  <th className="py-3 px-4">Lot #</th>
+                  <th className="py-3 px-4">Variety Name</th>
+                  <th className="py-3 px-4">Crop</th>
+                  <th className="py-3 px-4">Germination</th>
+                  <th className="py-3 px-4">Purity</th>
+                  <th className="py-3 px-4">Stock</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">QR / Security</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#F1EFE6]">
+                {seller?.batches?.map((b) => (
+                  <tr key={b.id} className="hover:bg-[#F7F8F3] transition-colors">
+                    <td className="py-3.5 px-4 font-mono font-bold text-[#121714]">#{b.batchNumber}</td>
+                    <td className="py-3.5 px-4 font-bold text-[#121714]">{b.name}</td>
+                    <td className="py-3.5 px-4 text-[#5B665F]">{b.cropType}</td>
+                    <td className="py-3.5 px-4 font-bold text-[#6AB547]">{b.germinationRate}%</td>
+                    <td className="py-3.5 px-4 font-bold text-[#121714]">{b.purity}%</td>
+                    <td className="py-3.5 px-4">{b.availableQuantityKg} kg</td>
+                    <td className="py-3.5 px-4">
+                      <VerifiedBadge isValid={b.certificationStatus === "Certified"} size="sm" />
+                    </td>
+                    <td className="py-3.5 px-4 text-right space-x-1.5">
                       <button
-                        onClick={() => setShippingOrder(order)}
-                        className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 ml-auto shadow-sm"
+                        onClick={() => {
+                          setActiveInspectSeed(b);
+                          setInspectModalType("qr");
+                        }}
+                        className="p-1.5 rounded-full border border-[#E1E6DA] hover:bg-[#EEF3E6] text-[#6AB547] cursor-pointer"
+                        title="Seed Bag QR Tag"
                       >
-                        <Truck className="w-3.5 h-3.5" />
-                        <span>Ship Order</span>
+                        <QrCode className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setActiveInspectSeed(b);
+                          setInspectModalType("tamper");
+                        }}
+                        className="p-1.5 rounded-full border border-[#E1E6DA] hover:bg-[#EEF3E6] text-[#121714] cursor-pointer"
+                        title="Test Hash Verification"
+                      >
+                        <FileCheck2 className="w-3.5 h-3.5" />
                       </button>
                     </td>
                   </tr>
@@ -276,126 +348,47 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({ currentAddress
               </tbody>
             </table>
           </div>
-        )}
-      </div>
-
-      {/* Registered Seed Batches Table */}
-      <div className="rounded-2xl bg-[#0a1f11]/90 border border-[#48A741]/25 shadow-md overflow-hidden">
-        <div className="px-6 py-4 border-b border-[#48A741]/20 flex items-center justify-between">
-          <h2 className="font-display font-bold text-base text-white">
-            My Registered Seed Lots & Inventories
-          </h2>
-          <span className="text-xs text-slate-400 font-medium">
-            {seller?.batches?.length || 0} Batches Registered
-          </span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-[#07130b] text-slate-300 font-semibold border-b border-[#48A741]/20">
-              <tr>
-                <th className="py-3 px-4">Lot #</th>
-                <th className="py-3 px-4">Seed Name</th>
-                <th className="py-3 px-4">Crop Type</th>
-                <th className="py-3 px-4">Germination %</th>
-                <th className="py-3 px-4">CA Status</th>
-                <th className="py-3 px-4">Price / kg</th>
-                <th className="py-3 px-4">Available Stock</th>
-                <th className="py-3 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#48A741]/10">
-              {seller?.batches?.map((batch) => (
-                <tr key={batch.id} className="hover:bg-[#07160d]">
-                  <td className="py-3.5 px-4 font-mono text-[#48A741] font-bold">{batch.batchNumber}</td>
-                  <td className="py-3.5 px-4 font-bold text-white">{batch.name}</td>
-                  <td className="py-3.5 px-4 text-slate-300">{batch.cropType}</td>
-                  <td className="py-3.5 px-4 font-mono font-bold text-[#48A741]">{batch.germinationRate}%</td>
-                  <td className="py-3.5 px-4">
-                    <span
-                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-bold text-[10px] ${batch.certificationStatus === "Certified"
-                          ? "bg-[#48A741]/20 text-[#48A741] border border-[#48A741]/40"
-                          : "bg-amber-950/40 text-amber-300 border border-amber-600/40"
-                        }`}
-                    >
-                      <CheckCircle2 className="w-3 h-3" />
-                      {batch.certificationStatus}
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-4 font-mono text-slate-200">{batch.pricePerKg} ETH</td>
-                  <td className="py-3.5 px-4 font-mono text-slate-200">{batch.availableQuantityKg} kg</td>
-                  <td className="py-3.5 px-4 text-right">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <button
-                        onClick={() => {
-                          setActiveInspectSeed(batch);
-                          setTamperModalOpen(true);
-                        }}
-                        className="p-1.5 rounded-lg border border-[#48A741]/30 text-slate-300 hover:text-white hover:bg-[#48A741]/20"
-                        title="Run Tamper Integrity Check"
-                      >
-                        <FileCheck2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          setActiveInspectSeed(batch);
-                          setQrModalOpen(true);
-                        }}
-                        className="p-1.5 rounded-lg border border-[#48A741]/30 text-slate-300 hover:text-white hover:bg-[#48A741]/20"
-                        title="Display Seed Bag QR Tag"
-                      >
-                        <QrCode className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
       </div>
 
-      {/* Trust Explainability Breakdown */}
-      {seller?.trustDetails && (
-        <TrustExplainability explanation={seller.trustDetails} />
-      )}
-
-      {/* Register Batch Modal */}
+      {/* Register Batch Modal with Unit Hints & Validation (§11.4 Rule 3) */}
       {registerModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
-          <div className="bg-[#07160d] rounded-3xl max-w-2xl w-full border border-[#48A741]/30 shadow-2xl p-6 sm:p-8 space-y-6 my-8 text-slate-100">
-            <div className="flex items-center justify-between pb-4 border-b border-[#48A741]/20">
-              <div className="flex items-center gap-2.5">
-                <PlusCircle className="w-6 h-6 text-[#48A741]" />
-                <h3 className="font-display font-extrabold text-xl text-white">
-                  Register New Seed Batch on Chain
-                </h3>
-              </div>
-              <button onClick={() => setRegisterModalOpen(false)} className="text-slate-400 hover:text-white">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F2A1D]/70 backdrop-blur-xs">
+          <div className="bg-[#F7F8F3] border border-[#E1E6DA] rounded-[28px] max-w-xl w-full p-6 sm:p-7 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setRegisterModalOpen(false)}
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white border border-[#E1E6DA] text-[#5B665F] hover:text-[#121714] flex items-center justify-center cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
 
-            <form onSubmit={handleRegisterBatch} className="space-y-4 text-xs">
+            <h3 className="text-xl font-black text-[#121714] mb-1">
+              Register Seed Batch & Generate QR Tag
+            </h3>
+            <p className="text-xs text-[#5B665F] mb-4">
+              Upload laboratory parameters. The cryptographic SHA-256 fingerprint will be stored immutably on Ethereum.
+            </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <form onSubmit={handleRegisterBatch} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-slate-300 block mb-1">Seed Batch Name:</label>
+                  <label className="text-xs font-bold text-[#121714] block mb-1">Seed Variety Name</label>
                   <input
                     type="text"
                     required
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
-                    placeholder="e.g. Basmati Rice Pusa-1509"
-                    className="w-full p-2.5 rounded-xl border border-[#48A741]/30 bg-[#0a1f11] text-white focus:outline-none focus:border-[#48A741]"
+                    placeholder="e.g. Certified Wheat HD-3226"
+                    className="w-full p-2.5 text-xs rounded-xl border border-[#E1E6DA] bg-white focus:outline-none focus:border-[#6AB547]"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-300 block mb-1">Crop Category:</label>
+                  <label className="text-xs font-bold text-[#121714] block mb-1">Crop Category</label>
                   <select
                     value={formCrop}
                     onChange={(e) => setFormCrop(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-[#48A741]/30 bg-[#0a1f11] text-white focus:outline-none focus:border-[#48A741]"
+                    className="w-full p-2.5 text-xs rounded-xl border border-[#E1E6DA] bg-white focus:outline-none focus:border-[#6AB547]"
                   >
                     <option value="Cereals">Cereals</option>
                     <option value="Pulses">Pulses</option>
@@ -406,210 +399,153 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({ currentAddress
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
-                  <label className="font-bold text-slate-300 block mb-1">Cultivar / Variety:</label>
-                  <input
-                    type="text"
-                    required
-                    value={formVariety}
-                    onChange={(e) => setFormVariety(e.target.value)}
-                    placeholder="e.g. Pusa-1509 Early Maturity"
-                    className="w-full p-2.5 rounded-xl border border-[#48A741]/30 bg-[#0a1f11] text-white focus:outline-none focus:border-[#48A741]"
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-slate-300 block mb-1">Lot / Batch ID:</label>
-                  <input
-                    type="text"
-                    required
-                    value={formBatchNo}
-                    onChange={(e) => setFormBatchNo(e.target.value)}
-                    placeholder="e.g. IN-PB-RCE-2025-220"
-                    className="w-full p-2.5 rounded-xl border border-[#48A741]/30 bg-[#0a1f11] text-white focus:outline-none focus:border-[#48A741] font-mono"
-                  />
-                </div>
-              </div>
-
-              {/* Lab Quality Test Parameters */}
-              <div className="p-4 rounded-2xl bg-[#0a1f11] border border-[#48A741]/25 space-y-3">
-                <p className="font-bold text-[#48A741] uppercase tracking-wider text-[11px]">
-                  Laboratory Quality Test Parameters (Audited on Chain)
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-400 block mb-1">Germination %</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={formGermination}
-                      onChange={(e) => setFormGermination(Number(e.target.value))}
-                      className="w-full p-2 rounded-lg border border-[#48A741]/30 bg-[#07130b] text-white font-mono"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-400 block mb-1">Genetic Purity %</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={formPurity}
-                      onChange={(e) => setFormPurity(Number(e.target.value))}
-                      className="w-full p-2 rounded-lg border border-[#48A741]/30 bg-[#07130b] text-white font-mono"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-400 block mb-1">Vigor Index %</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={formVigor}
-                      onChange={(e) => setFormVigor(Number(e.target.value))}
-                      className="w-full p-2 rounded-lg border border-[#48A741]/30 bg-[#07130b] text-white font-mono"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-400 block mb-1">Moisture %</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={formMoisture}
-                      onChange={(e) => setFormMoisture(Number(e.target.value))}
-                      className="w-full p-2 rounded-lg border border-[#48A741]/30 bg-[#07130b] text-white font-mono"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="font-bold text-slate-300 block mb-1">Price per kg (ETH):</label>
+                  <label className="text-xs font-bold text-[#121714] block mb-1">Germination %</label>
                   <input
                     type="number"
-                    step="0.00001"
+                    step="0.1"
+                    min="70"
+                    max="100"
+                    required
+                    value={formGermination}
+                    onChange={(e) => setFormGermination(Number(e.target.value))}
+                    className="w-full p-2 text-xs rounded-xl border border-[#E1E6DA] bg-white font-mono"
+                  />
+                  <span className="text-[10px] text-[#5B665F]">usually 80–99%</span>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-[#121714] block mb-1">Genetic Purity %</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="90"
+                    max="100"
+                    required
+                    value={formPurity}
+                    onChange={(e) => setFormPurity(Number(e.target.value))}
+                    className="w-full p-2 text-xs rounded-xl border border-[#E1E6DA] bg-white font-mono"
+                  />
+                  <span className="text-[10px] text-[#5B665F]">min 98%</span>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-[#121714] block mb-1">Price / kg (ETH)</label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    min="0.0001"
                     required
                     value={formPrice}
                     onChange={(e) => setFormPrice(Number(e.target.value))}
-                    className="w-full p-2.5 rounded-xl border border-[#48A741]/30 bg-[#0a1f11] text-white font-mono"
+                    className="w-full p-2 text-xs rounded-xl border border-[#E1E6DA] bg-white font-mono"
                   />
+                  <span className="text-[10px] text-[#5B665F]">≈ ₹{Math.round(formPrice * 280000)}</span>
                 </div>
                 <div>
-                  <label className="font-bold text-slate-300 block mb-1">Available Quantity (kg):</label>
+                  <label className="text-xs font-bold text-[#121714] block mb-1">Lot Quantity (kg)</label>
                   <input
                     type="number"
+                    min="10"
                     required
                     value={formQty}
                     onChange={(e) => setFormQty(Number(e.target.value))}
-                    className="w-full p-2.5 rounded-xl border border-[#48A741]/30 bg-[#0a1f11] text-white font-mono"
+                    className="w-full p-2 text-xs rounded-xl border border-[#E1E6DA] bg-white font-mono"
                   />
+                  <span className="text-[10px] text-[#5B665F]">available stock</span>
                 </div>
               </div>
 
               <div>
-                <label className="font-bold text-slate-300 block mb-1">Lab Certificate Content / Findings:</label>
+                <label className="text-xs font-bold text-[#121714] block mb-1">Laboratory Certificate Document Content</label>
                 <textarea
-                  rows={2}
+                  rows={3}
                   value={formCertText}
                   onChange={(e) => setFormCertText(e.target.value)}
-                  placeholder="Official accredited laboratory test report summary. Automatically hashed with SHA-256."
-                  className="w-full p-2.5 rounded-xl border border-[#48A741]/30 bg-[#0a1f11] text-white font-mono text-[11px]"
+                  className="w-full p-2.5 text-xs rounded-xl border border-[#E1E6DA] bg-white font-mono"
                 />
+                <p className="text-[10px] text-[#5B665F] mt-0.5">
+                  The SHA-256 hash of this text is stamped to the blockchain registry for tamper detection.
+                </p>
               </div>
 
-              <div className="pt-2 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setRegisterModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-[#48A741]/30 text-slate-300 hover:text-white hover:bg-white/10 font-semibold"
-                >
+              <div className="flex justify-end gap-2 pt-2">
+                <PillButton variant="ghost" size="sm" onClick={() => setRegisterModalOpen(false)}>
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submittingBatch}
-                  className="px-6 py-2 rounded-xl bg-[#48A741] hover:bg-[#3d9136] text-white font-bold shadow-md shadow-[#48A741]/25"
-                >
-                  {submittingBatch ? "Computing Hash & Recording..." : "Register Batch on Chain"}
-                </button>
+                </PillButton>
+                <PillButton variant="primary" size="sm" withArrow isLoading={submittingBatch}>
+                  Register on Blockchain
+                </PillButton>
               </div>
-
             </form>
           </div>
         </div>
       )}
 
-      {/* Ship Order Modal */}
+      {/* Shipping Modal */}
       {shippingOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-[#07160d] rounded-2xl max-w-md w-full border border-[#48A741]/30 shadow-2xl p-6 space-y-4 text-slate-100">
-            <div className="flex items-center justify-between pb-3 border-b border-[#48A741]/20">
-              <h3 className="font-display font-bold text-base text-white flex items-center gap-2">
-                <Truck className="w-5 h-5 text-blue-400" />
-                Dispatch Seed Shipment
-              </h3>
-              <button onClick={() => setShippingOrder(null)} className="text-slate-400 hover:text-white">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <p className="text-xs text-slate-300">
-              Shipping Order #{shippingOrder.id} ({shippingOrder.seedName}, {shippingOrder.quantityKg} kg) to buyer {shippingOrder.buyerAddress.substring(0, 6)}...
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F2A1D]/70 backdrop-blur-xs">
+          <div className="bg-[#F7F8F3] border border-[#E1E6DA] rounded-[28px] max-w-md w-full p-6 shadow-2xl space-y-4">
+            <h3 className="text-lg font-black text-[#121714]">Ship Order #{shippingOrder.id}</h3>
+            <p className="text-xs text-[#5B665F]">
+              Confirm that seed bags have been labeled with the official QR security tag and handed to courier.
             </p>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-300">Logistics Carrier Name:</label>
+            <div>
+              <label className="text-xs font-bold text-[#121714] block mb-1">Logistics Carrier</label>
               <input
                 type="text"
                 value={carrier}
                 onChange={(e) => setCarrier(e.target.value)}
-                className="w-full p-2.5 text-xs rounded-xl border border-[#48A741]/30 bg-[#0a1f11] text-white"
+                className="w-full p-2.5 text-xs rounded-xl border border-[#E1E6DA] bg-white"
               />
             </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-300">Tracking Consignment Number:</label>
+            <div>
+              <label className="text-xs font-bold text-[#121714] block mb-1">Tracking Number</label>
               <input
                 type="text"
+                placeholder="e.g. TRK-AGRI-883921"
                 value={trackingNo}
                 onChange={(e) => setTrackingNo(e.target.value)}
-                placeholder="e.g. TRK-AGRI-882910"
-                className="w-full p-2.5 text-xs rounded-xl border border-[#48A741]/30 bg-[#0a1f11] text-white font-mono"
+                className="w-full p-2.5 text-xs rounded-xl border border-[#E1E6DA] bg-white font-mono"
               />
             </div>
-
-            <button
-              onClick={handleShipOrder}
-              disabled={submittingShip}
-              className="w-full py-2.5 rounded-xl bg-[#48A741] hover:bg-[#3d9136] text-white font-bold text-xs shadow-md shadow-[#48A741]/25 transition-all"
-            >
-              {submittingShip ? "Updating State Machine..." : "Confirm Shipment & Notify Farmer"}
-            </button>
+            <div className="flex justify-end gap-2 pt-2">
+              <PillButton variant="ghost" size="sm" onClick={() => setShippingOrder(null)}>Cancel</PillButton>
+              <PillButton variant="primary" size="sm" withArrow isLoading={submittingShip} onClick={handleShipOrder}>
+                Confirm Shipped
+              </PillButton>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Inspect Modals */}
-      {activeInspectSeed && (
-        <>
-          <TamperCheckModal
-            batchId={activeInspectSeed.id}
-            batchNumber={activeInspectSeed.batchNumber}
-            seedName={activeInspectSeed.name}
-            certificateCID={activeInspectSeed.certificateCID}
-            certificateHash={activeInspectSeed.certificateHash}
-            isOpen={tamperModalOpen}
-            onClose={() => setTamperModalOpen(false)}
-          />
-
-          <QRCodeModal
-            batchId={activeInspectSeed.id}
-            batchNumber={activeInspectSeed.batchNumber}
-            seedName={activeInspectSeed.name}
-            isOpen={qrModalOpen}
-            onClose={() => setQrModalOpen(false)}
-          />
-        </>
+      {/* QR & Tamper Modals */}
+      {activeInspectSeed && inspectModalType === "qr" && (
+        <QRCodeModal
+          batchId={activeInspectSeed.id}
+          batchNumber={activeInspectSeed.batchNumber}
+          seedName={activeInspectSeed.name}
+          isOpen={true}
+          onClose={() => {
+            setActiveInspectSeed(null);
+            setInspectModalType(null);
+          }}
+        />
       )}
 
+      {activeInspectSeed && inspectModalType === "tamper" && (
+        <TamperCheckModal
+          batchId={activeInspectSeed.id}
+          batchNumber={activeInspectSeed.batchNumber}
+          seedName={activeInspectSeed.name}
+          certificateCID={activeInspectSeed.certificateCID}
+          certificateHash={activeInspectSeed.certificateHash}
+          isOpen={true}
+          onClose={() => {
+            setActiveInspectSeed(null);
+            setInspectModalType(null);
+          }}
+        />
+      )}
     </div>
   );
 };
