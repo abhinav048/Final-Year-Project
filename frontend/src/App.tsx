@@ -42,12 +42,12 @@ function AppContent() {
   return (
     <div className="min-h-screen flex flex-col bg-deep-backdrop text-[#121714] relative selection:bg-[#6AB547] selection:text-white">
       {/* 1. Permanent Demo Data / Sepolia Ribbon (§11.4 Rule 10) */}
-      <DemoDataRibbon />
+      <DemoDataRibbon onReplayLoader={() => setShowInitialLoader(true)} />
 
       {/* 2. Seedling Sprouting Loading Animation on Mount */}
       {showInitialLoader && (
         <LoadingScreen
-          minDurationMs={2200}
+          minDurationMs={7000}
           onComplete={() => setShowInitialLoader(false)}
         />
       )}
