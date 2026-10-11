@@ -10,6 +10,7 @@ import { LeafDecor } from "../components/LeafDecor";
 import { TrustScoreCard } from "../components/TrustScoreCard";
 import { StatusStepper } from "../components/StatusStepper";
 import { VerifiedBadge } from "../components/VerifiedBadge";
+import { ExecutionStepsModal } from "../components/ExecutionStepsModal";
 import {
   Sprout,
   ShieldCheck,
@@ -34,13 +35,31 @@ export const LandingPage: React.FC = () => {
   const [stats, setStats] = useState<AnalyticsData | null>(null);
   const [activeGuideTab, setActiveGuideTab] = useState<"farmer" | "seller">("farmer");
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [executionModalOpen, setExecutionModalOpen] = useState(false);
   const { login } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchAnalytics().then(setStats).catch(() => {});
-  }, []);
+
+    // Scroll-triggered animations for elements as user scrolls down
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-revealed");
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+    );
+
+    const elements = document.querySelectorAll(".scroll-reveal, .scroll-reveal-scale");
+    elements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [activeGuideTab]);
 
   const handlePortalQuickAccess = (role: "farmer" | "seller" | "admin", targetUrl: string) => {
     login(role);
@@ -107,66 +126,106 @@ export const LandingPage: React.FC = () => {
         <div className="sheet-surface wave-pattern border border-[#E1E6DA] overflow-hidden relative">
 
           {/* ==================================================== */}
-          {/* HERO SECTION WITH ALTERNATING-COLOR HEADLINE         */}
+          {/* HERO SECTION WITH BOTANICAL ARTWORK & HIGHER-IMPACT TYPOGRAPHY */}
           {/* ==================================================== */}
-          <div className="px-4 sm:px-10 lg:px-16 pt-12 sm:pt-20 pb-16 sm:pb-24 text-center relative">
+          <div className="px-4 sm:px-10 lg:px-16 pt-12 sm:pt-20 pb-16 sm:pb-24 text-center relative overflow-hidden">
             
-            {/* Hand-Drawn Line-Art Leaves in Margins (§11.3) */}
-            <div className="hidden lg:block absolute left-2 xl:left-8 top-6 w-28 h-40 xl:w-32 xl:h-44 pointer-events-none opacity-80 -rotate-6">
+            {/* Subtle Radiant Botanical Glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-[#6AB547]/8 blur-[100px] rounded-full pointer-events-none" />
+
+            {/* Botanical Leaf Art - Elegantly Aligned alongside the Headline with Interactive Sway */}
+            <div className="hidden lg:block absolute left-3 xl:left-8 top-12 xl:top-14 w-28 h-48 xl:w-36 xl:h-60 pointer-events-auto opacity-90 animate-float-left leaf-interactive">
               <LeafDecor variant="branch" />
             </div>
-            <div className="hidden lg:block absolute right-2 xl:right-8 top-6 w-28 h-40 xl:w-32 xl:h-44 pointer-events-none opacity-80 rotate-6">
+            <div className="hidden lg:block absolute right-3 xl:right-8 top-12 xl:top-14 w-28 h-48 xl:w-36 xl:h-60 pointer-events-auto opacity-90 animate-float-right leaf-interactive">
               <LeafDecor variant="fern" />
             </div>
 
             {/* TagPill */}
             <div className="flex justify-center mb-6">
-              <TagPill icon={<Sparkles className="w-3.5 h-3.5 text-[#6AB547]" />}>
-                Verified seeds, protected payments
-              </TagPill>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 border border-[#D2ECC3] shadow-[0_2px_10px_rgba(106,181,71,0.08)] text-xs font-bold text-[#1E4D2B] backdrop-blur-md hover:border-[#6AB547] transition-all">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#6AB547] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#6AB547]"></span>
+                </span>
+                <Sparkles className="w-3.5 h-3.5 text-[#6AB547]" />
+                <span>Verified seeds • Cryptographically protected payments</span>
+              </div>
             </div>
 
-            {/* Huge Headline that Alternates Green and Near-Black Words */}
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold leading-[1.1] tracking-tight max-w-4xl mx-auto">
-              <span className="text-[#121714]">Buy genuine seeds </span>
-              <span className="text-[#6AB547] underline decoration-[#6AB547]/30 decoration-wavy">
-                with proof,
+            {/* High-Impact Headline with Botanical Emphasis */}
+            <h1 className="text-4xl sm:text-6xl lg:text-[72px] font-black leading-[1.1] tracking-tight max-w-4xl mx-auto text-[#121714]">
+              Buy genuine seeds{" "}
+              <span className="relative inline-block whitespace-nowrap">
+                <span className="bg-gradient-to-r from-[#2A6638] via-[#52A332] to-[#258540] bg-clip-text text-transparent">
+                  with proof,
+                </span>
+                {/* Organic Botanical Curved Accent Underline */}
+                <svg
+                  className="absolute -bottom-2 left-0 w-full h-3 text-[#6AB547]/60 overflow-visible"
+                  viewBox="0 0 200 12"
+                  fill="none"
+                  preserveAspectRatio="none"
+                >
+                  <path
+                    d="M 2 8 C 45 2, 110 12, 198 4"
+                    stroke="currentColor"
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
               </span>{" "}
-              <span className="text-[#121714]">not promises.</span>
+              not promises.
             </h1>
 
             {/* Subtitle */}
-            <p className="mt-6 text-base sm:text-lg text-[#5B665F] max-w-2xl mx-auto leading-relaxed font-normal">
+            <p className="mt-7 text-base sm:text-lg text-[#556359] max-w-2xl mx-auto leading-relaxed font-normal">
               Every seed lot is authenticated with a tamper-proof laboratory certificate on Ethereum. Your payment stays securely locked in escrow until you confirm healthy seedling viability.
             </p>
 
             {/* Dual CTAs with Trailing Arrow Chip */}
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4">
+            <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4">
               <Link to="/marketplace">
-                <PillButton variant="primary" size="lg" withArrow>
+                <PillButton
+                  variant="primary"
+                  size="lg"
+                  withArrow
+                  className="shadow-[0_8px_24px_rgba(106,181,71,0.28)] hover:shadow-[0_12px_32px_rgba(106,181,71,0.38)] hover:scale-[1.02] transition-all"
+                >
                   Browse certified seeds
                 </PillButton>
               </Link>
               <Link to="/verify/seed/1">
-                <PillButton variant="secondary" size="lg" withArrow>
+                <PillButton
+                  variant="secondary"
+                  size="lg"
+                  withArrow
+                  className="shadow-xs hover:shadow-md hover:border-[#6AB547] hover:bg-white hover:scale-[1.02] transition-all"
+                >
                   Verify a seed batch
                 </PillButton>
               </Link>
             </div>
 
             {/* Trust Assurance Micro-Notes */}
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-xs font-semibold text-[#5B665F]">
-              <span className="flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-[#6AB547]" />
-                Zero advance risk for farmers
+            <div className="mt-9 flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs font-semibold text-[#48554D]">
+              <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 border border-[#E1E6DA] shadow-xs backdrop-blur-xs">
+                <span className="w-4 h-4 rounded-full bg-[#EEF8F1] flex items-center justify-center text-[#2E9E57]">
+                  <Check className="w-2.5 h-2.5 stroke-[3]" />
+                </span>
+                <span>Zero advance risk for farmers</span>
               </span>
-              <span className="flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-[#6AB547]" />
-                SHA-256 cryptographic QR tags
+              <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 border border-[#E1E6DA] shadow-xs backdrop-blur-xs">
+                <span className="w-4 h-4 rounded-full bg-[#EEF8F1] flex items-center justify-center text-[#2E9E57]">
+                  <Check className="w-2.5 h-2.5 stroke-[3]" />
+                </span>
+                <span>SHA-256 cryptographic QR tags</span>
               </span>
-              <span className="flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-[#6AB547]" />
-                AI seller reliability gate
+              <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 border border-[#E1E6DA] shadow-xs backdrop-blur-xs">
+                <span className="w-4 h-4 rounded-full bg-[#EEF8F1] flex items-center justify-center text-[#2E9E57]">
+                  <Check className="w-2.5 h-2.5 stroke-[3]" />
+                </span>
+                <span>AI seller reliability gate</span>
               </span>
             </div>
           </div>
@@ -174,9 +233,9 @@ export const LandingPage: React.FC = () => {
           {/* ==================================================== */}
           {/* TRUST-STAT STRIP (§11.5)                             */}
           {/* ==================================================== */}
-          <div className="tint-sage border-y border-[#E1E6DA] px-4 sm:px-10 py-8">
+          <div className="tint-sage border-y border-[#E1E6DA] px-4 sm:px-10 py-8 relative overflow-hidden">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center sm:text-left">
-              <div className="p-3">
+              <div className="p-3 scroll-reveal stagger-1 rounded-2xl hover:bg-white/60 transition-colors">
                 <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-bold uppercase tracking-wider text-[#6AB547]">
                   <Coins className="w-4 h-4" />
                   <span>Payment Protected</span>
@@ -189,7 +248,7 @@ export const LandingPage: React.FC = () => {
                 </p>
               </div>
 
-              <div className="p-3">
+              <div className="p-3 scroll-reveal stagger-2 rounded-2xl hover:bg-white/60 transition-colors">
                 <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-bold uppercase tracking-wider text-[#2F8F83]">
                   <ShieldCheck className="w-4 h-4" />
                   <span>Lab Certified Lots</span>
@@ -202,7 +261,7 @@ export const LandingPage: React.FC = () => {
                 </p>
               </div>
 
-              <div className="p-3">
+              <div className="p-3 scroll-reveal stagger-3 rounded-2xl hover:bg-white/60 transition-colors">
                 <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-bold uppercase tracking-wider text-[#E9A93B]">
                   <Building2 className="w-4 h-4" />
                   <span>Accredited Breeders</span>
@@ -215,7 +274,7 @@ export const LandingPage: React.FC = () => {
                 </p>
               </div>
 
-              <div className="p-3">
+              <div className="p-3 scroll-reveal stagger-4 rounded-2xl hover:bg-white/60 transition-colors">
                 <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-bold uppercase tracking-wider text-[#2E9E57]">
                   <Award className="w-4 h-4" />
                   <span>Farmer Satisfaction</span>
@@ -233,8 +292,13 @@ export const LandingPage: React.FC = () => {
           {/* ==================================================== */}
           {/* THE PROBLEM: 3 CARDS (§11.5)                         */}
           {/* ==================================================== */}
-          <div className="px-4 sm:px-10 lg:px-16 py-16 sm:py-20">
-            <div className="text-center max-w-2xl mx-auto mb-12">
+          <div className="px-4 sm:px-10 lg:px-16 py-16 sm:py-20 relative overflow-hidden">
+            {/* Subtle botanical sprout accent on left margin */}
+            <div className="hidden xl:block absolute left-2 top-8 w-20 h-36 opacity-35 -rotate-12 pointer-events-auto animate-float-left leaf-interactive">
+              <LeafDecor variant="sprout" />
+            </div>
+
+            <div className="text-center max-w-2xl mx-auto mb-12 scroll-reveal">
               <span className="text-xs font-bold uppercase tracking-wider text-[#D8503F]">
                 The Agricultural Crisis
               </span>
@@ -247,7 +311,7 @@ export const LandingPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="p-7 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs hover-subtle-lift space-y-3">
+              <div className="p-7 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs hover-subtle-lift space-y-3 scroll-reveal-scale stagger-1">
                 <div className="w-12 h-12 rounded-2xl bg-[#FDF1F0] border border-[#F7B8B2] flex items-center justify-center text-[#D8503F]">
                   <AlertTriangle className="w-6 h-6" />
                 </div>
@@ -259,7 +323,7 @@ export const LandingPage: React.FC = () => {
                 </p>
               </div>
 
-              <div className="p-7 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs hover-subtle-lift space-y-3">
+              <div className="p-7 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs hover-subtle-lift space-y-3 scroll-reveal-scale stagger-2">
                 <div className="w-12 h-12 rounded-2xl bg-[#FEF9EE] border border-[#FADFA8] flex items-center justify-center text-[#E9A93B]">
                   <Coins className="w-6 h-6" />
                 </div>
@@ -271,7 +335,7 @@ export const LandingPage: React.FC = () => {
                 </p>
               </div>
 
-              <div className="p-7 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs hover-subtle-lift space-y-3">
+              <div className="p-7 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs hover-subtle-lift space-y-3 scroll-reveal-scale stagger-3">
                 <div className="w-12 h-12 rounded-2xl bg-[#EEF3E6] border border-[#D2ECC3] flex items-center justify-center text-[#6AB547]">
                   <FileCheck2 className="w-6 h-6" />
                 </div>
@@ -288,8 +352,13 @@ export const LandingPage: React.FC = () => {
           {/* ==================================================== */}
           {/* HOW IT WORKS: 4-STEP ILLUSTRATED FLOW (§11.5)         */}
           {/* ==================================================== */}
-          <div id="how-it-works" className="tint-sand border-y border-[#E1E6DA] px-4 sm:px-10 lg:px-16 py-16 sm:py-20">
-            <div className="text-center max-w-2xl mx-auto mb-12">
+          <div id="how-it-works" className="tint-sand border-y border-[#E1E6DA] px-4 sm:px-10 lg:px-16 py-16 sm:py-20 relative overflow-hidden">
+            {/* Subtle botanical spray accent on right margin */}
+            <div className="hidden xl:block absolute right-3 top-8 w-24 h-40 opacity-40 rotate-12 pointer-events-auto animate-float-right leaf-interactive">
+              <LeafDecor variant="spray" />
+            </div>
+
+            <div className="text-center max-w-2xl mx-auto mb-12 scroll-reveal">
               <span className="text-xs font-bold uppercase tracking-wider text-[#6AB547]">
                 Simplified 4-Step Process
               </span>
@@ -327,17 +396,18 @@ export const LandingPage: React.FC = () => {
                   desc: "Farmer verifies healthy seedling sprouting and clicks 'Confirm Delivery'. The escrow transfers payment and boosts the breeder's score.",
                   icon: Sprout
                 }
-              ].map((item) => {
+              ].map((item, index) => {
                 const ItemIcon = item.icon;
+                const staggerClasses = ["stagger-1", "stagger-2", "stagger-3", "stagger-4"][index];
                 return (
                   <div
                     key={item.step}
-                    className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs relative"
+                    className={`p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs relative hover-subtle-lift scroll-reveal-scale ${staggerClasses}`}
                   >
                     <span className="text-2xl font-black text-[#E1E6DA] font-mono">
                       {item.step}
                     </span>
-                    <div className="w-10 h-10 rounded-xl bg-[#EEF3E6] text-[#6AB547] flex items-center justify-center my-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#EEF3E6] text-[#6AB547] flex items-center justify-center my-3 shadow-2xs">
                       <ItemIcon className="w-5 h-5" />
                     </div>
                     <h4 className="text-base font-extrabold text-[#121714]">
@@ -355,9 +425,9 @@ export const LandingPage: React.FC = () => {
           {/* ==================================================== */}
           {/* TRUST SCORE EXPLAINER WITH LIVE CARD (§11.5)         */}
           {/* ==================================================== */}
-          <div id="trust-score" className="px-4 sm:px-10 lg:px-16 py-16 sm:py-20">
+          <div id="trust-score" className="px-4 sm:px-10 lg:px-16 py-16 sm:py-20 relative overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-              <div className="lg:col-span-6 space-y-4">
+              <div className="lg:col-span-6 space-y-4 scroll-reveal">
                 <span className="text-xs font-bold uppercase tracking-wider text-[#6AB547]">
                   AI Multi-Factor Trust Engine
                 </span>
@@ -392,7 +462,7 @@ export const LandingPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="lg:col-span-6">
+              <div className="lg:col-span-6 scroll-reveal-scale stagger-2">
                 <TrustScoreCard
                   score={92}
                   sellerName="Punjab Agricultural Research Council (PARC)"
@@ -414,7 +484,7 @@ export const LandingPage: React.FC = () => {
           {/* ESCROW PROTECTION EXPLAINER WITH STEPPER (§11.5)     */}
           {/* ==================================================== */}
           <div className="tint-sage border-y border-[#E1E6DA] px-4 sm:px-10 lg:px-16 py-16 sm:py-20">
-            <div className="max-w-3xl mx-auto text-center mb-10">
+            <div className="max-w-3xl mx-auto text-center mb-10 scroll-reveal">
               <span className="text-xs font-bold uppercase tracking-wider text-[#6AB547]">
                 Non-Custodial Smart Escrow
               </span>
@@ -426,16 +496,24 @@ export const LandingPage: React.FC = () => {
               </p>
             </div>
 
-            <StatusStepper currentStep="escrowed" />
+            <div className="scroll-reveal-scale stagger-1">
+              <StatusStepper currentStep="escrowed" />
+            </div>
           </div>
 
           {/* ==================================================== */}
           {/* SEED VERIFICATION / QR TAG SECTION (§11.5)           */}
           {/* ==================================================== */}
-          <div className="px-4 sm:px-10 lg:px-16 py-16 sm:py-20">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-              <div className="lg:col-span-6">
-                <div className="p-8 rounded-[24px] bg-white border border-[#E1E6DA] shadow-xs space-y-4">
+          <div className="px-4 sm:px-10 lg:px-16 py-16 sm:py-20 relative overflow-hidden">
+            {/* Ambient Botanical Foliage */}
+            <LeafDecor
+              variant="fern"
+              className="absolute -bottom-8 -right-8 w-44 h-44 opacity-15 pointer-events-none rotate-12 text-[#6AB547]"
+            />
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
+              <div className="lg:col-span-6 scroll-reveal-scale">
+                <div className="p-8 rounded-[24px] bg-white border border-[#E1E6DA] shadow-xs space-y-4 hover:shadow-lg transition-shadow">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-[#5B665F] uppercase">
                       Physical Bag Security Tag
@@ -443,8 +521,8 @@ export const LandingPage: React.FC = () => {
                     <VerifiedBadge isValid={true} showDetails={true} />
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-[#F7F8F3] border border-[#E1E6DA] flex items-center gap-4">
-                    <div className="w-20 h-20 bg-white p-2 rounded-xl border border-[#E1E6DA] flex items-center justify-center shrink-0">
+                  <div className="p-4 rounded-2xl bg-[#F7F8F3] border border-[#E1E6DA] flex items-center gap-4 hover:border-[#6AB547]/50 transition-colors">
+                    <div className="w-20 h-20 bg-white p-2 rounded-xl border border-[#E1E6DA] flex items-center justify-center shrink-0 shadow-inner">
                       <QrCode className="w-16 h-16 text-[#121714]" />
                     </div>
                     <div className="text-xs space-y-1">
@@ -462,15 +540,26 @@ export const LandingPage: React.FC = () => {
                     Test the verification tool with your device camera or upload a test certificate to witness real-time cryptographic hash confirmation.
                   </p>
 
-                  <Link to="/verify/seed/1" className="inline-block">
-                    <PillButton variant="dark" size="sm" withArrow>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <PillButton
+                      variant="dark"
+                      size="sm"
+                      withArrow
+                      onClick={() => setExecutionModalOpen(true)}
+                    >
                       Launch Real-Time Tamper Scanner
                     </PillButton>
-                  </Link>
+                    <Link
+                      to="/verify/seed/1"
+                      className="text-xs font-semibold text-[#5B665F] hover:text-[#121714] underline underline-offset-2 transition-colors"
+                    >
+                      Open Public Portal
+                    </Link>
+                  </div>
                 </div>
               </div>
 
-              <div className="lg:col-span-6 space-y-4">
+              <div className="lg:col-span-6 space-y-4 scroll-reveal stagger-1">
                 <span className="text-xs font-bold uppercase tracking-wider text-[#6AB547]">
                   Instant Cryptographic Check
                 </span>
@@ -497,8 +586,18 @@ export const LandingPage: React.FC = () => {
           {/* ==================================================== */}
           {/* FOR FARMERS / FOR SELLERS TABS (§11.5)               */}
           {/* ==================================================== */}
-          <div className="tint-sand border-y border-[#E1E6DA] px-4 sm:px-10 lg:px-16 py-16 sm:py-20">
-            <div className="text-center max-w-xl mx-auto mb-10">
+          <div className="tint-sand border-y border-[#E1E6DA] px-4 sm:px-10 lg:px-16 py-16 sm:py-20 relative overflow-hidden">
+            {/* Ambient Leaf Accents */}
+            <LeafDecor
+              variant="sprout"
+              className="absolute -top-6 -left-6 w-32 h-32 opacity-15 pointer-events-none -rotate-12"
+            />
+            <LeafDecor
+              variant="spray"
+              className="absolute -bottom-8 -right-8 w-36 h-36 opacity-15 pointer-events-none rotate-45"
+            />
+
+            <div className="text-center max-w-xl mx-auto mb-10 scroll-reveal relative z-10">
               <span className="text-xs font-bold uppercase tracking-wider text-[#5B665F]">
                 Tailored Experiences
               </span>
@@ -506,7 +605,7 @@ export const LandingPage: React.FC = () => {
                 Built for Both Seed Buyers & Honest Producers
               </h2>
               
-              <div className="inline-flex p-1.5 rounded-full bg-white border border-[#E1E6DA] mt-6 shadow-xs">
+              <div className="inline-flex p-1.5 rounded-full bg-white border border-[#E1E6DA] mt-6 shadow-xs scroll-reveal stagger-1">
                 <button
                   onClick={() => setActiveGuideTab("farmer")}
                   className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
@@ -531,36 +630,36 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {activeGuideTab === "farmer" ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-                <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto relative z-10">
+                <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2 scroll-reveal stagger-1 hover:shadow-md hover:-translate-y-1 transition-all">
                   <div className="text-xs font-bold text-[#6AB547] uppercase">Step 1</div>
                   <h4 className="font-extrabold text-[#121714]">Browse Certified Seed Varieties</h4>
                   <p className="text-xs text-[#5B665F]">Inspect laboratory germination %, genetic purity, and seller reliability score before purchasing.</p>
                 </div>
-                <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2">
+                <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2 scroll-reveal stagger-2 hover:shadow-md hover:-translate-y-1 transition-all">
                   <div className="text-xs font-bold text-[#6AB547] uppercase">Step 2</div>
                   <h4 className="font-extrabold text-[#121714]">Safe Escrow Protection</h4>
                   <p className="text-xs text-[#5B665F]">Payment is safely locked in smart contract until you receive the seed bags and test seedling viability.</p>
                 </div>
-                <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2">
+                <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2 scroll-reveal stagger-3 hover:shadow-md hover:-translate-y-1 transition-all">
                   <div className="text-xs font-bold text-[#6AB547] uppercase">Step 3</div>
                   <h4 className="font-extrabold text-[#121714]">Raise Dispute if Defective</h4>
                   <p className="text-xs text-[#5B665F]">Click 'Raise Dispute' anytime if germination fails to freeze funds for an arbitration refund.</p>
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-                <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto relative z-10">
+                <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2 scroll-reveal stagger-1 hover:shadow-md hover:-translate-y-1 transition-all">
                   <div className="text-xs font-bold text-[#121714] uppercase">Step 1</div>
                   <h4 className="font-extrabold text-[#121714]">Institutional Accreditation</h4>
                   <p className="text-xs text-[#5B665F]">Submit research credentials and obtain Certification Authority verification on-chain.</p>
                 </div>
-                <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2">
+                <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2 scroll-reveal stagger-2 hover:shadow-md hover:-translate-y-1 transition-all">
                   <div className="text-xs font-bold text-[#121714] uppercase">Step 2</div>
                   <h4 className="font-extrabold text-[#121714]">Upload Lab Test Certificates</h4>
                   <p className="text-xs text-[#5B665F]">Smart contracts generate cryptographic QR tags to label your physical seed packages.</p>
                 </div>
-                <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2">
+                <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2 scroll-reveal stagger-3 hover:shadow-md hover:-translate-y-1 transition-all">
                   <div className="text-xs font-bold text-[#121714] uppercase">Step 3</div>
                   <h4 className="font-extrabold text-[#121714]">Instant Payout & Score Boost</h4>
                   <p className="text-xs text-[#5B665F]">When delivery is confirmed, smart escrow unlocks payment automatically and boosts your trust score.</p>
@@ -568,7 +667,7 @@ export const LandingPage: React.FC = () => {
               </div>
             )}
 
-            <div className="text-center mt-8">
+            <div className="text-center mt-8 scroll-reveal stagger-2 relative z-10">
               <PillButton
                 variant={activeGuideTab === "farmer" ? "primary" : "dark"}
                 size="md"
@@ -588,8 +687,13 @@ export const LandingPage: React.FC = () => {
           {/* ==================================================== */}
           {/* FAQ ACCORDION (§11.5)                                */}
           {/* ==================================================== */}
-          <div id="faq" className="px-4 sm:px-10 lg:px-16 py-16 sm:py-20">
-            <div className="text-center max-w-2xl mx-auto mb-12">
+          <div id="faq" className="px-4 sm:px-10 lg:px-16 py-16 sm:py-20 relative overflow-hidden">
+            <LeafDecor
+              variant="fern"
+              className="absolute top-1/3 -left-10 w-44 h-44 opacity-15 pointer-events-none -rotate-45"
+            />
+
+            <div className="text-center max-w-2xl mx-auto mb-12 scroll-reveal relative z-10">
               <span className="text-xs font-bold uppercase tracking-wider text-[#5B665F]">
                 Clear Answers
               </span>
@@ -598,13 +702,13 @@ export const LandingPage: React.FC = () => {
               </h2>
             </div>
 
-            <div className="max-w-3xl mx-auto space-y-3">
+            <div className="max-w-3xl mx-auto space-y-3 relative z-10">
               {faqs.map((faq, index) => {
                 const isOpen = openFaq === index;
                 return (
                   <div
                     key={index}
-                    className="p-5 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs transition-all"
+                    className={`p-5 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs transition-all scroll-reveal stagger-${(index % 4) + 1} hover:border-[#6AB547]/50`}
                   >
                     <button
                       onClick={() => toggleFaq(index)}
@@ -615,7 +719,7 @@ export const LandingPage: React.FC = () => {
                       </span>
                       <ChevronDown
                         className={`w-4 h-4 text-[#5B665F] shrink-0 transition-transform ${
-                          isOpen ? "rotate-180" : ""
+                          isOpen ? "rotate-180 text-[#6AB547]" : ""
                         }`}
                       />
                     </button>
@@ -634,8 +738,21 @@ export const LandingPage: React.FC = () => {
           {/* CTA BAND IN DEEP GREEN (§11.5)                      */}
           {/* ==================================================== */}
           <div className="bg-[#163A24] text-white px-6 sm:px-12 py-16 sm:py-20 text-center relative overflow-hidden">
-            <div className="max-w-3xl mx-auto relative z-10 space-y-5">
-              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/10 text-[#6AB547] text-xs font-bold border border-white/10">
+            {/* Ambient Foliage Glows */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-[#6AB547]/10 blur-[100px] rounded-full pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#2E9E57]/10 blur-[100px] rounded-full pointer-events-none" />
+
+            <LeafDecor
+              variant="monstera"
+              className="absolute -top-12 -right-12 w-52 h-52 opacity-20 pointer-events-none text-emerald-400 rotate-12"
+            />
+            <LeafDecor
+              variant="spray"
+              className="absolute -bottom-10 -left-10 w-44 h-44 opacity-20 pointer-events-none text-lime-400 -rotate-45"
+            />
+
+            <div className="max-w-3xl mx-auto relative z-10 space-y-5 scroll-reveal-scale">
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/10 text-[#6AB547] text-xs font-bold border border-white/10 backdrop-blur-xs">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Join the Honest Agricultural Network</span>
               </div>
@@ -702,6 +819,14 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* Execution Protocol & Sprout Button Modal (§11.5) */}
+      <ExecutionStepsModal
+        isOpen={executionModalOpen}
+        onClose={() => setExecutionModalOpen(false)}
+        title="Live Tamper Scanner & Cryptographic Verification"
+        batchNumber="Wheat HD-2967 // PB-2026-0819"
+      />
     </div>
   );
 };

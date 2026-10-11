@@ -1,11 +1,12 @@
 import React from "react";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export interface PillButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "dark" | "ghost";
   size?: "sm" | "md" | "lg";
   withArrow?: boolean;
   isLoading?: boolean;
+  loadingText?: string;
   icon?: React.ReactNode;
 }
 
@@ -15,6 +16,7 @@ export const PillButton: React.FC<PillButtonProps> = ({
   size = "md",
   withArrow = false,
   isLoading = false,
+  loadingText,
   icon,
   className = "",
   disabled,
@@ -50,16 +52,34 @@ export const PillButton: React.FC<PillButtonProps> = ({
   return (
     <button
       disabled={disabled || isLoading}
-      className={`inline-flex items-center justify-center rounded-full transition-all duration-150 cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed ${variantStyles} ${sizeStyles} ${className}`}
+      className={`inline-flex items-center justify-center rounded-full transition-all duration-150 cursor-pointer select-none disabled:opacity-75 disabled:cursor-not-allowed ${variantStyles} ${sizeStyles} ${className}`}
       {...props}
     >
       {isLoading ? (
-        <Loader2 className="w-4 h-4 animate-spin" />
+        <span className="inline-flex items-center gap-2">
+          {/* AgriTech 3-sprout pulse seedling wave */}
+          <svg viewBox="0 0 54 24" className="w-10 h-4.5 shrink-0" aria-hidden="true">
+            <g className="sspulse">
+              <path d="M9 22 V10" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" fill="none" />
+              <path d="M9 14 C4 14 2 10 2 6 C6.5 6 8.6 9.5 9 14 Z M9 11 C9 6 12 3 16 3 C16 8 13 11 9 11 Z" fill="currentColor" />
+            </g>
+            <g className="sspulse" style={{ animationDelay: "0.18s" }}>
+              <path d="M27 22 V10" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" fill="none" />
+              <path d="M27 14 C22 14 20 10 20 6 C24.5 6 26.6 9.5 27 14 Z M27 11 C27 6 30 3 34 3 C34 8 31 11 27 11 Z" fill="currentColor" />
+            </g>
+            <g className="sspulse" style={{ animationDelay: "0.36s" }}>
+              <path d="M45 22 V10" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" fill="none" />
+              <path d="M45 14 C40 14 38 10 38 6 C42.5 6 44.6 9.5 45 14 Z M45 11 C45 6 48 3 52 3 C52 8 49 11 45 11 Z" fill="currentColor" />
+            </g>
+          </svg>
+          <span>{loadingText || children}</span>
+        </span>
       ) : (
-        icon && <span className="shrink-0">{icon}</span>
+        <>
+          {icon && <span className="shrink-0">{icon}</span>}
+          <span>{children}</span>
+        </>
       )}
-
-      <span>{children}</span>
 
       {withArrow && !isLoading && (
         <span

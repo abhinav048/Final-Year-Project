@@ -9,6 +9,7 @@ import { QRCodeModal } from "../components/QRCodeModal";
 import { PillButton } from "../components/PillButton";
 import { TagPill } from "../components/TagPill";
 import { VerifiedBadge } from "../components/VerifiedBadge";
+import { ExecutionStepsModal } from "../components/ExecutionStepsModal";
 import {
   ShieldCheck,
   CheckCircle2,
@@ -36,6 +37,7 @@ export const SeedDetailPage: React.FC<SeedDetailPageProps> = ({ currentAddress }
   // Modals
   const [tamperModalOpen, setTamperModalOpen] = useState(false);
   const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [executionModalOpen, setExecutionModalOpen] = useState(false);
 
   // Purchase State
   const [quantity, setQuantity] = useState(25);
@@ -52,7 +54,12 @@ export const SeedDetailPage: React.FC<SeedDetailPageProps> = ({ currentAddress }
     }
   }, [id]);
 
-  const handleBuy = async () => {
+  const handleBuy = () => {
+    if (!seed) return;
+    setExecutionModalOpen(true);
+  };
+
+  const handleExecutePurchase = async () => {
     if (!seed) return;
     setBuyLoading(true);
     try {
@@ -62,7 +69,6 @@ export const SeedDetailPage: React.FC<SeedDetailPageProps> = ({ currentAddress }
         quantityKg: quantity
       });
       setOrderComplete(res);
-      // Reload seed details
       fetchSeedById(seed.id).then(setSeed);
     } catch (err: any) {
       alert("Order failed: " + err.message);
@@ -288,6 +294,7 @@ export const SeedDetailPage: React.FC<SeedDetailPageProps> = ({ currentAddress }
                   withArrow
                   className="w-full"
                   isLoading={buyLoading}
+                  loadingText="Confirm in your wallet…"
                   onClick={handleBuy}
                 >
                   Deposit ETH & Lock in Escrow
@@ -376,6 +383,14 @@ export const SeedDetailPage: React.FC<SeedDetailPageProps> = ({ currentAddress }
           seedName={seed.name}
           isOpen={qrModalOpen}
           onClose={() => setQrModalOpen(false)}
+        />
+
+        <ExecutionStepsModal
+          isOpen={executionModalOpen}
+          onClose={() => setExecutionModalOpen(false)}
+          title={`Escrow Lock: ${seed.name}`}
+          batchNumber={`Lot #${seed.batchNumber}`}
+          onExecutionComplete={handleExecutePurchase}
         />
 
       </div>

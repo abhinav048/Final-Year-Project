@@ -28,14 +28,21 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-weight: 800;
     letter-spacing: -0.025em;
     color: #121714;
   }
 
-  code, pre, .font-mono {
+  code,
+  pre,
+  .font-mono {
     font-family: 'JetBrains Mono', monospace;
   }
 }
@@ -85,26 +92,111 @@
     stroke-dashoffset: 600;
     opacity: 0.2;
   }
+
   100% {
     stroke-dashoffset: 0;
     opacity: 0.95;
   }
 }
 
-.animate-leaf-draw {
-  stroke-dasharray: 600;
-  stroke-dashoffset: 0;
-  animation: leafDraw 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+/* Botanical Leaf Ambient Swaying Animations */
+@keyframes floatSwayLeft {
+
+  0%,
+  100% {
+    transform: translateY(0px) rotate(-6deg);
+  }
+
+  50% {
+    transform: translateY(-10px) rotate(-3deg);
+  }
+}
+
+@keyframes floatSwayRight {
+
+  0%,
+  100% {
+    transform: translateY(0px) rotate(6deg);
+  }
+
+  50% {
+    transform: translateY(-10px) rotate(3deg);
+  }
+}
+
+.animate-float-left {
+  animation: floatSwayLeft 7s ease-in-out infinite;
+}
+
+.animate-float-right {
+  animation: floatSwayRight 8s ease-in-out infinite;
+}
+
+/* Scroll-triggered reveal animations */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.scroll-reveal.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scroll-reveal-scale {
+  opacity: 0;
+  transform: scale(0.95) translateY(24px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.scroll-reveal-scale.is-revealed {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+/* Stagger Delays */
+.stagger-1 {
+  transition-delay: 80ms;
+}
+
+.stagger-2 {
+  transition-delay: 160ms;
+}
+
+.stagger-3 {
+  transition-delay: 240ms;
+}
+
+.stagger-4 {
+  transition-delay: 320ms;
+}
+
+.stagger-5 {
+  transition-delay: 400ms;
+}
+
+/* Interactive Botanical Glow & Lift */
+.leaf-interactive {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+  transform-origin: bottom center;
+}
+
+.leaf-interactive:hover {
+  transform: scale(1.08) rotate(3deg);
+  filter: drop-shadow(0 8px 20px rgba(106, 181, 71, 0.25));
 }
 
 /* Smooth Interactive Lift */
 .hover-subtle-lift {
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
 }
 
 .hover-subtle-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(15, 42, 29, 0.08);
+  transform: translateY(-4px);
+  box-shadow: 0 14px 30px rgba(15, 42, 29, 0.1);
 }
 
 /* Custom Scrollbar for Warm Light Theme */
@@ -128,7 +220,10 @@
 
 /* Accessibility: Respect Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
+
+  *,
+  ::before,
+  ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

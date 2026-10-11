@@ -47,7 +47,7 @@ function AppContent() {
       {/* 2. Seedling Sprouting Loading Animation on Mount */}
       {showInitialLoader && (
         <LoadingScreen
-          minDurationMs={800}
+          minDurationMs={2200}
           onComplete={() => setShowInitialLoader(false)}
         />
       )}

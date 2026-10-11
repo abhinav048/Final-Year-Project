@@ -86,16 +86,14 @@ export const PublicVerifyPage: React.FC = () => {
       <div className="sheet-surface border border-[#E1E6DA] rounded-[28px] overflow-hidden shadow-sheet bg-white">
         {/* Verification Status Header: Big PASS / PENDING result (§11.6) */}
         <div
-          className={`p-6 sm:p-8 text-center space-y-2 border-b ${
-            isCertified
+          className={`p-6 sm:p-8 text-center space-y-2 border-b ${isCertified
               ? "bg-[#EEF8F1] border-[#B8E4C7] text-[#2E9E57]"
               : "bg-[#FEF9EE] border-[#FADFA8] text-[#E9A93B]"
-          }`}
+            }`}
         >
           <div
-            className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-2 shadow-xs ${
-              isCertified ? "bg-[#2E9E57] text-white" : "bg-[#E9A93B] text-white"
-            }`}
+            className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-2 shadow-xs ${isCertified ? "bg-[#2E9E57] text-white" : "bg-[#E9A93B] text-white"
+              }`}
           >
             {isCertified ? (
               <CheckCircle2 className="w-10 h-10 stroke-[2.5]" />

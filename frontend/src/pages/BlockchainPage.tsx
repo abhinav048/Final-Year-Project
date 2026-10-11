@@ -23,6 +23,7 @@ import { verifyBatchOnChain, checkBlockchainStatus } from "../services/blockchai
 import { useLanguage } from "../context/LanguageContext";
 import { PillButton } from "../components/PillButton";
 import { TagPill } from "../components/TagPill";
+import { VerificationStepsCard } from "../components/VerificationStepsCard";
 import { VerifiedBadge } from "../components/VerifiedBadge";
 
 export const BlockchainPage: React.FC = () => {
@@ -282,11 +283,23 @@ export const BlockchainPage: React.FC = () => {
               size="sm"
               withArrow
               isLoading={verifying}
+              loadingText="Confirm in your wallet…"
               onClick={handleRunVerifyTestbench}
             >
               Verify On-Chain Batch
             </PillButton>
           </div>
+
+          {verifying && (
+            <div className="pt-2">
+              <VerificationStepsCard
+                currentStep={2}
+                progress={68}
+                showSkeletonAndButton={true}
+                buttonText="Confirm in your wallet…"
+              />
+            </div>
+          )}
 
           {verifyResult && (
             <div className={`p-4 rounded-2xl border text-xs space-y-1.5 ${

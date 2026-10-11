@@ -8,12 +8,15 @@ import { VerifiedBadge } from "../components/VerifiedBadge";
 import { TxModal, TxStatus } from "../components/TxModal";
 import { EmptyState } from "../components/EmptyState";
 import { Skeleton, ErrorState } from "../components/ErrorState";
+import { VerificationStepsCard } from "../components/VerificationStepsCard";
+import { ExecutionStepsModal } from "../components/ExecutionStepsModal";
 import { Sparkles, Sprout, ArrowRight, ShieldCheck, Coins, Check } from "lucide-react";
 
 export const DesignSystemPage: React.FC = () => {
   const [interactiveScore, setInteractiveScore] = useState(88);
   const [activeStep, setActiveStep] = useState<OrderStep>("escrowed");
   const [modalStatus, setModalStatus] = useState<TxStatus | null>(null);
+  const [executionModalOpen, setExecutionModalOpen] = useState(false);
 
   return (
     <div className="space-y-12 max-w-6xl mx-auto px-4 sm:px-6 py-8">
@@ -112,8 +115,11 @@ export const DesignSystemPage: React.FC = () => {
             <PillButton variant="ghost">
               Ghost Button
             </PillButton>
-            <PillButton variant="primary" isLoading>
-              Loading State
+            <PillButton variant="primary" isLoading loadingText="Confirm in your wallet…">
+              Confirm in your wallet…
+            </PillButton>
+            <PillButton variant="dark" isLoading loadingText="Reading blockchain record…">
+              Processing…
             </PillButton>
             <PillButton variant="primary" disabled>
               Disabled
@@ -125,6 +131,38 @@ export const DesignSystemPage: React.FC = () => {
             <PillButton size="sm">Small (38px)</PillButton>
             <PillButton size="md" withArrow>Medium (48px)</PillButton>
             <PillButton size="lg" withArrow>Large (54px)</PillButton>
+          </div>
+        </div>
+      </section>
+
+      {/* 2b. VERIFICATION STEPS & SPROUT PULSE BUTTON (§11.5) */}
+      <section className="space-y-4">
+        <h2 className="text-xl font-extrabold text-[#121714]">
+          2b. Verification Steps & Execution Sprout Wave (§11.5)
+        </h2>
+        <p className="text-xs text-[#5B665F]">
+          Exact specification: Verification steps (blockchain, certificate hash, seller score) and skeleton with pulsing sprout button.
+        </p>
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+          <VerificationStepsCard
+            currentStep={2}
+            progress={68}
+            showSkeletonAndButton={true}
+            buttonText="Confirm in your wallet…"
+          />
+          <div className="p-6 rounded-[28px] bg-white border border-[#E1E6DA] space-y-4 max-w-sm">
+            <h4 className="font-extrabold text-sm text-[#121714]">Interactive Modal Execution</h4>
+            <p className="text-xs text-[#5B665F] leading-relaxed">
+              Click the button below to launch the modal simulation and watch the steps auto-progress from reading the blockchain record to confirming on-chain.
+            </p>
+            <PillButton
+              variant="primary"
+              size="md"
+              withArrow
+              onClick={() => setExecutionModalOpen(true)}
+            >
+              Test Live Execution
+            </PillButton>
           </div>
         </div>
       </section>
@@ -277,6 +315,13 @@ export const DesignSystemPage: React.FC = () => {
           />
         </div>
       </section>
+
+      {/* Execution Modal Interactive Simulation */}
+      <ExecutionStepsModal
+        isOpen={executionModalOpen}
+        onClose={() => setExecutionModalOpen(false)}
+        title="Execution Protocol & Smart Contract Escrow"
+      />
     </div>
   );
 };

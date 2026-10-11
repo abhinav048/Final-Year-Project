@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { CheckCircle2, AlertTriangle, Loader2, ExternalLink, X, ChevronDown, RotateCcw } from "lucide-react";
+import { CheckCircle2, AlertTriangle, ExternalLink, X, ChevronDown, RotateCcw } from "lucide-react";
 import { PillButton } from "./PillButton";
+import { VerificationStepsCard } from "./VerificationStepsCard";
 
 export type TxStatus = "idle" | "preparing" | "pending" | "confirmed" | "failed";
 
@@ -31,43 +32,22 @@ export const TxModal: React.FC<TxModalProps> = ({
 
   if (!isOpen) return null;
 
+  const currentStep = status === "preparing" ? 1 : status === "pending" ? 2 : status === "confirmed" ? 4 : 1;
+  const progress = status === "preparing" ? 40 : status === "pending" ? 85 : status === "confirmed" ? 100 : 20;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F2A1D]/70 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-[#F7F8F3] border border-[#E1E6DA] rounded-[28px] max-w-md w-full p-6 sm:p-7 shadow-2xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F2A1D]/75 backdrop-blur-xs animate-in fade-in duration-150">
+      <div className="bg-[#F7F8F3] border border-[#E1E6DA] rounded-[32px] max-w-lg w-full p-6 sm:p-7 shadow-2xl relative">
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white border border-[#E1E6DA] text-[#5B665F] hover:text-[#121714] flex items-center justify-center cursor-pointer"
+          type="button"
+          className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white border border-[#E1E6DA] text-[#5B665F] hover:text-[#121714] flex items-center justify-center cursor-pointer shadow-xs transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
 
-        <div className="text-center pt-2 pb-4">
-          {/* Status Icon */}
-          {status === "preparing" && (
-            <div className="w-16 h-16 rounded-full bg-[#EEF3E6] border-2 border-[#D2ECC3] flex items-center justify-center mx-auto mb-4 text-[#6AB547]">
-              <Loader2 className="w-8 h-8 animate-spin" />
-            </div>
-          )}
-
-          {status === "pending" && (
-            <div className="w-16 h-16 rounded-full bg-[#FEF9EE] border-2 border-[#FADFA8] flex items-center justify-center mx-auto mb-4 text-[#E9A93B]">
-              <Loader2 className="w-8 h-8 animate-spin" />
-            </div>
-          )}
-
-          {status === "confirmed" && (
-            <div className="w-16 h-16 rounded-full bg-[#EEF8F1] border-2 border-[#B8E4C7] flex items-center justify-center mx-auto mb-4 text-[#2E9E57]">
-              <CheckCircle2 className="w-8 h-8" />
-            </div>
-          )}
-
-          {status === "failed" && (
-            <div className="w-16 h-16 rounded-full bg-[#FDF1F0] border-2 border-[#F7B8B2] flex items-center justify-center mx-auto mb-4 text-[#D8503F]">
-              <AlertTriangle className="w-8 h-8" />
-            </div>
-          )}
-
-          <h3 className="text-xl font-black text-[#121714]">
+        <div className="text-left pt-1 pb-4">
+          <h3 className="text-xl sm:text-2xl font-black text-[#121714] tracking-tight">
             {status === "preparing" && "Waiting for Wallet Approval"}
             {status === "pending" && "Safely Processing on Blockchain"}
             {status === "confirmed" && "Transaction Confirmed!"}
@@ -77,34 +57,38 @@ export const TxModal: React.FC<TxModalProps> = ({
           <p className="text-xs text-[#5B665F] mt-1 font-medium">{title}</p>
         </div>
 
-        {/* What Will Happen Explanation Box */}
-        <div className="p-4 rounded-2xl bg-white border border-[#E1E6DA] text-xs space-y-2 mb-4">
-          <span className="font-bold uppercase tracking-wider text-[10px] text-[#5B665F]">
-            What is happening:
-          </span>
-          <p className="text-[#121714] leading-relaxed">{whatWillHappen}</p>
+        {/* Verification Steps & Button Component during Execution */}
+        {(status === "preparing" || status === "pending" || status === "confirmed") && (
+          <div className="my-3">
+            <VerificationStepsCard
+              currentStep={currentStep}
+              progress={progress}
+              showSkeletonAndButton={status !== "confirmed"}
+              buttonText="Confirm in your wallet…"
+            />
+          </div>
+        )}
 
-          {txHash && (
-            <div className="pt-2 border-t border-[#F1EFE6] flex items-center justify-between">
-              <span className="text-[#5B665F]">Transaction Hash:</span>
-              <a
-                href={`https://sepolia.etherscan.io/tx/${txHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-mono font-bold text-[#6AB547] hover:underline flex items-center gap-1 text-[11px]"
-              >
-                <span>
-                  {txHash.slice(0, 6)}...{txHash.slice(-4)}
-                </span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
+        {/* Confirmed State Icon & Notice */}
+        {status === "confirmed" && (
+          <div className="p-4 rounded-2xl bg-[#EEF8F1] border border-[#B8E4C7] text-xs text-[#2E9E57] space-y-1 my-3 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-[#2E9E57] text-white flex items-center justify-center shrink-0">
+              <CheckCircle2 className="w-6 h-6" />
             </div>
-          )}
-        </div>
+            <div>
+              <p className="font-extrabold text-sm text-[#163A24]">Smart Escrow Payment Locked</p>
+              <p className="text-[#2E9E57]">Funds are safely held until you confirm delivery & seed vigor.</p>
+            </div>
+          </div>
+        )}
 
-        {/* Revert / Error Message (Friendly) */}
+        {/* Failed State Display */}
         {status === "failed" && (
           <div className="mb-4">
+            <div className="w-14 h-14 rounded-full bg-[#FDF1F0] border-2 border-[#F7B8B2] flex items-center justify-center mx-auto mb-3 text-[#D8503F]">
+              <AlertTriangle className="w-7 h-7" />
+            </div>
+
             <div className="p-3.5 rounded-2xl bg-[#FDF1F0] border border-[#F7B8B2] text-xs text-[#D8503F] space-y-1">
               <p className="font-bold">
                 {errorMessage ||
@@ -139,8 +123,33 @@ export const TxModal: React.FC<TxModalProps> = ({
           </div>
         )}
 
+        {/* What Will Happen Explanation Box */}
+        <div className="p-4 rounded-2xl bg-white border border-[#E1E6DA] text-xs space-y-2 mb-4">
+          <span className="font-bold uppercase tracking-wider text-[10px] text-[#5B665F]">
+            What is happening:
+          </span>
+          <p className="text-[#121714] leading-relaxed">{whatWillHappen}</p>
+
+          {txHash && (
+            <div className="pt-2 border-t border-[#F1EFE6] flex items-center justify-between">
+              <span className="text-[#5B665F]">Transaction Hash:</span>
+              <a
+                href={`https://sepolia.etherscan.io/tx/${txHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono font-bold text-[#6AB547] hover:underline flex items-center gap-1 text-[11px]"
+              >
+                <span>
+                  {txHash.slice(0, 6)}...{txHash.slice(-4)}
+                </span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          )}
+        </div>
+
         {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-2 pt-2">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#E1E6DA]">
           {status === "failed" && onRetry && (
             <PillButton
               variant="secondary"
@@ -164,3 +173,4 @@ export const TxModal: React.FC<TxModalProps> = ({
     </div>
   );
 };
+
