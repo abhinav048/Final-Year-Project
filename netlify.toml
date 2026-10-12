@@ -1,0 +1,45 @@
+# ==============================================================================
+# SeedSure: Netlify Configuration (Root)
+# Decentralized Smart Contract Seed Quality & Seller Trust Platform
+# ==============================================================================
+
+[build]
+  # When deployed from root, change directory into frontend workspace
+  base = "frontend"
+  # Output build directory inside the base folder
+  publish = "dist"
+  # Production build command
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--legacy-peer-deps"
+
+# Client-Side SPA Routing:
+# Rewrites all unmatched browser route paths to index.html with HTTP 200
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Optional: Proxy API requests if user configures a remote backend
+# [[redirects]]
+#   from = "/api/*"
+#   to = "https://your-backend-api.onrender.com/api/:splat"
+#   status = 200
+#   force = true
+
+# HTTP Security & Cache Headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# Immutable Caching for Fingerprinted Static Assets
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

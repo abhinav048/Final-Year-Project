@@ -97,7 +97,15 @@ npm run dev
 - [Smart Contract Integration Specification](file:///c:/Users/abhin/OneDrive/Desktop/Final%20Year%20Project/docs/SMART_CONTRACT_INTEGRATION.md) — Contract ABIs, functions, events, and addresses.
 - [ML Service Integration Specification](file:///c:/Users/abhin/OneDrive/Desktop/Final%20Year%20Project/docs/ML_SERVICE_INTEGRATION.md) — Feature vectors, mathematical formulas, and `featuresHash` audit verification.
 
+## 🌐 Netlify Deployment
+
+This project is 100% **Netlify-Ready**:
+- Pre-configured [`netlify.toml`](./netlify.toml) and [`_redirects`](./frontend/public/_redirects) for client-side SPA routing (no 404s on page refresh).
+- Integrated fallback demo dataset allowing evaluators to interactively test all features on Netlify without needing an external database.
+- See the full [Netlify Deployment Guide](./docs/NETLIFY_DEPLOYMENT.md) for 1-click Git setup and optional custom backend configuration.
+
 ---
 
 ## ⚖️ Research Disclosure
 *All agricultural crop data, breeder records, and laboratory reports used in this demonstration prototype are synthetic representations engineered to evaluate platform performance, cryptographic integrity, and trust scoring algorithms for an IEEE research submission.*
+

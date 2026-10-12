@@ -23,6 +23,7 @@ import { verifyBatchOnChain, checkBlockchainStatus } from "../services/blockchai
 import { useLanguage } from "../context/LanguageContext";
 import { PillButton } from "../components/PillButton";
 import { TagPill } from "../components/TagPill";
+import { fetchBlockchainStatus, fetchBlockchainTransactions } from "../api";
 import { VerificationStepsCard } from "../components/VerificationStepsCard";
 import { VerifiedBadge } from "../components/VerifiedBadge";
 
@@ -43,20 +44,20 @@ export const BlockchainPage: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [statusRes, txRes] = await Promise.all([
-        fetch("http://localhost:5001/api/blockchain/status").then((r) => r.json()).catch(() => null),
-        fetch("http://localhost:5001/api/blockchain/transactions").then((r) => r.json()).catch(() => null)
+      const [statusData, txData] = await Promise.all([
+        fetchBlockchainStatus().catch(() => null),
+        fetchBlockchainTransactions().catch(() => null)
       ]);
 
-      if (statusRes?.success) {
-        setNetworkStatus(statusRes.data);
+      if (statusData) {
+        setNetworkStatus(statusData);
       } else {
         const localStatus = await checkBlockchainStatus();
         setNetworkStatus(localStatus);
       }
 
-      if (txRes?.success) {
-        setTransactions(txRes.data);
+      if (txData && Array.isArray(txData)) {
+        setTransactions(txData);
       }
     } catch (e) {
       console.error("Failed to load blockchain status:", e);
