@@ -72,24 +72,24 @@ export const LandingPage: React.FC = () => {
 
   const faqs = [
     {
-      q: "What happens if the seeds fail to germinate or arrive damaged?",
-      a: "Your money is 100% safe. When you purchase certified seeds on SeedSure, your payment is held securely in an automated smart escrow contract. The breeder cannot withdraw the money. If the seed lot is defective or germination fails field tests, you click 'Raise Dispute' in your Farmer Portal, freezing the funds until our Platform Arbiter reviews the lab findings and issues a complete refund."
+      q: t("faq1Q", "How does the Ethereum smart contract escrow protect farmers?"),
+      a: t("faq1A", "When you purchase certified seeds on SeedSure, your payment is securely locked in an immutable Ethereum smart contract (Marketplace.sol). The seller cannot access the funds until you physically receive the seeds, verify the cryptographic QR tag on the bag, and confirm delivery. If the seed lot is defective, you can raise a dispute to freeze the escrow funds for an administrative refund.")
     },
     {
-      q: "How does the QR tag on physical seed bags prove authenticity?",
-      a: "Every seed bag has an immutable cryptographic QR tag. When you scan it with any smartphone camera, it fetches the original seed lot certification issued by the accredited testing laboratory. SeedSure computes the SHA-256 digital fingerprint of the document in real time and checks it against the tamper-proof blockchain registry. If even a single word or parameter was altered, the check immediately flags 'DOCUMENT CHANGED — DO NOT TRUST'."
+      q: t("faq2Q", "How does the QR tag on physical seed bags prove authenticity?"),
+      a: t("faq2A", "Every seed bag has an immutable cryptographic QR tag. When you scan it with any smartphone camera, it fetches the original seed lot certification issued by the accredited testing laboratory. SeedSure computes the SHA-256 digital fingerprint of the document in real time and checks it against the tamper-proof blockchain registry. If even a single word or parameter was altered, the check immediately flags 'DOCUMENT CHANGED — DO NOT TRUST'.")
     },
     {
-      q: "How can honest seed breeders improve their Reliability Score?",
-      a: "The SeedSure AI Trust Engine evaluates breeders across 5 objective dimensions: Lab Certification Ratio (25%), On-Time Delivery Fulfillment (25%), Transaction Completion Rate (20%), Verified Farmer Reviews (15%), and Dispute Loss History (15%). Breeders who consistently deliver high-germination seed lots on time earn scores up to 90–100 ('Excellent'), boosting their ranking at the top of the marketplace."
+      q: t("faq3Q", "How does the AI Multi-Factor Trust Engine evaluate breeders?"),
+      a: t("faq3A", "The SeedSure AI Trust Model scores breeders across 5 objective metrics: Lab Certification Ratio (25%), On-Time Logistics (25%), Transaction Success Rate (20%), Farmer Community Ratings (15%), and Escrow Dispute History (15%). Dynamic scores are periodically published to the Ethereum TrustScoreRegistry with canonical feature vector hashes for complete mathematical auditability.")
     },
     {
-      q: "Do farmers need cryptocurrency or technical Web3 knowledge to use SeedSure?",
-      a: "Not at all! SeedSure is built mobile-first with friendly Indian agricultural terminology. Farmers can log in with their phone number or Kisan ID, view prices with rupee references (1 ETH ≈ ₹2,80,000 INR demo rate), and test seed bags with standard phone cameras. All underlying smart escrow mechanisms run automatically behind the scenes."
+      q: t("faq4Q", "Can high-risk or unvetted sellers list fake seeds?"),
+      a: t("faq4A", "No! SeedSure enforces an automatic Smart Contract Trust Gate: sellers whose AI trust score drops below the safety threshold (<40/100) are automatically blocked by the smart contract from listing new seed batches or accepting escrow payments. Suspended breeders cannot bypass the system by creating new accounts, as each breeder identity requires verified credentials.")
     },
     {
-      q: "How are fraudulent sellers prevented from selling fake seeds?",
-      a: "SeedSure enforces an automatic Smart Contract Trust Gate: sellers whose AI trust score drops below the safety threshold (40/100) are instantly blocked by the smart contract from listing new seed batches or accepting escrow payments. Suspended breeders cannot bypass the system by creating new accounts, as each breeder identity requires verified credentials."
+      q: t("faq5Q", "Can farmers use SeedSure without complex crypto knowledge?"),
+      a: t("faq5A", "Yes! SeedSure is built with intuitive, farmer-first workflows. You can log in via demo farmer personas or phone credentials, review quality parameters in plain terms, and interact with the platform seamlessly. For Web3 users and evaluators, direct MetaMask connection to local Ethereum and Sepolia testnets is also fully supported.")
     }
   ];
 
@@ -107,7 +107,7 @@ export const LandingPage: React.FC = () => {
           {/* Small Top Tagline */}
           <p className="text-xs sm:text-sm text-[#A2B1A8] font-semibold tracking-wide mb-3 flex items-center justify-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#6AB547] animate-pulse" />
-            <span>Plant genuine seeds, secure honest harvest • Verified on Sepolia Testnet</span>
+            <span>{t("topTagline", "Plant genuine seeds, secure honest harvest • Verified on Sepolia Testnet")}</span>
           </p>
 
           {/* Giant Bold Display Wordmark: "SeedSure" peeking above the sheet */}
@@ -149,16 +149,16 @@ export const LandingPage: React.FC = () => {
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[#6AB547]"></span>
                 </span>
                 <Sparkles className="w-3.5 h-3.5 text-[#6AB547]" />
-                <span>Verified seeds • Cryptographically protected payments</span>
+                <span>{t("heroPillTag", "Verified seeds • Cryptographically protected payments")}</span>
               </div>
             </div>
 
             {/* High-Impact Headline with Botanical Emphasis */}
             <h1 className="text-4xl sm:text-6xl lg:text-[72px] font-black leading-[1.1] tracking-tight max-w-4xl mx-auto text-[#121714]">
-              Buy genuine seeds{" "}
+              {t("heroTitle1", "Buy genuine seeds")}{" "}
               <span className="relative inline-block whitespace-nowrap">
                 <span className="bg-gradient-to-r from-[#2A6638] via-[#52A332] to-[#258540] bg-clip-text text-transparent">
-                  with proof,
+                  {t("heroTitleAccent", "with proof,")}
                 </span>
                 {/* Organic Botanical Curved Accent Underline */}
                 <svg
@@ -175,12 +175,12 @@ export const LandingPage: React.FC = () => {
                   />
                 </svg>
               </span>{" "}
-              not promises.
+              {t("heroTitle2", "not promises.")}
             </h1>
 
             {/* Subtitle */}
             <p className="mt-7 text-base sm:text-lg text-[#556359] max-w-2xl mx-auto leading-relaxed font-normal">
-              Every seed lot is authenticated with a tamper-proof laboratory certificate on Ethereum. Your payment stays securely locked in escrow until you confirm healthy seedling viability.
+              {t("heroSubtitle", "Every seed lot is authenticated with a tamper-proof laboratory certificate on Ethereum. Your payment stays securely locked in escrow until you confirm healthy seedling viability.")}
             </p>
 
             {/* Dual CTAs with Trailing Arrow Chip */}
@@ -192,7 +192,7 @@ export const LandingPage: React.FC = () => {
                   withArrow
                   className="shadow-[0_8px_24px_rgba(106,181,71,0.28)] hover:shadow-[0_12px_32px_rgba(106,181,71,0.38)] hover:scale-[1.02] transition-all"
                 >
-                  Browse certified seeds
+                  {t("browseSeedsBtn", "Browse certified seeds")}
                 </PillButton>
               </Link>
               <Link to="/verify/seed/1">
@@ -202,7 +202,7 @@ export const LandingPage: React.FC = () => {
                   withArrow
                   className="shadow-xs hover:shadow-md hover:border-[#6AB547] hover:bg-white hover:scale-[1.02] transition-all"
                 >
-                  Verify a seed batch
+                  {t("verifyBatchBtn", "Verify a seed batch")}
                 </PillButton>
               </Link>
             </div>
@@ -213,19 +213,19 @@ export const LandingPage: React.FC = () => {
                 <span className="w-4 h-4 rounded-full bg-[#EEF8F1] flex items-center justify-center text-[#2E9E57]">
                   <Check className="w-2.5 h-2.5 stroke-[3]" />
                 </span>
-                <span>Zero advance risk for farmers</span>
+                <span>{t("trustNoteZeroRisk", "Zero advance risk for farmers")}</span>
               </span>
               <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 border border-[#E1E6DA] shadow-xs backdrop-blur-xs">
                 <span className="w-4 h-4 rounded-full bg-[#EEF8F1] flex items-center justify-center text-[#2E9E57]">
                   <Check className="w-2.5 h-2.5 stroke-[3]" />
                 </span>
-                <span>SHA-256 cryptographic QR tags</span>
+                <span>{t("trustNoteQr", "SHA-256 cryptographic QR tags")}</span>
               </span>
               <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 border border-[#E1E6DA] shadow-xs backdrop-blur-xs">
                 <span className="w-4 h-4 rounded-full bg-[#EEF8F1] flex items-center justify-center text-[#2E9E57]">
                   <Check className="w-2.5 h-2.5 stroke-[3]" />
                 </span>
-                <span>AI seller reliability gate</span>
+                <span>{t("trustNoteAiGate", "AI seller reliability gate")}</span>
               </span>
             </div>
           </div>
@@ -238,52 +238,52 @@ export const LandingPage: React.FC = () => {
               <div className="p-3 scroll-reveal stagger-1 rounded-2xl hover:bg-white/60 transition-colors">
                 <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-bold uppercase tracking-wider text-[#6AB547]">
                   <Coins className="w-4 h-4" />
-                  <span>Payment Protected</span>
+                  <span>{t("metricPaymentProtected", "Payment Protected")}</span>
                 </div>
                 <p className="text-2xl sm:text-3xl font-black text-[#121714] mt-1">
                   Ξ {stats?.activeEscrowEth || "4.85"} ETH
                 </p>
                 <p className="text-[11px] text-[#5B665F]">
-                  ≈ ₹13,58,000 INR held safely in escrow
+                  {t("metricEscrowSub", "≈ ₹13,58,000 INR held safely in escrow")}
                 </p>
               </div>
 
               <div className="p-3 scroll-reveal stagger-2 rounded-2xl hover:bg-white/60 transition-colors">
                 <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-bold uppercase tracking-wider text-[#2F8F83]">
                   <ShieldCheck className="w-4 h-4" />
-                  <span>Lab Certified Lots</span>
+                  <span>{t("metricLabCertified", "Lab Certified Lots")}</span>
                 </div>
                 <p className="text-2xl sm:text-3xl font-black text-[#121714] mt-1">
                   {stats?.certifiedBatches || 9} Batches
                 </p>
                 <p className="text-[11px] text-[#5B665F]">
-                  100% tamper-verified on blockchain
+                  {t("metricLabSub", "100% tamper-verified on blockchain")}
                 </p>
               </div>
 
               <div className="p-3 scroll-reveal stagger-3 rounded-2xl hover:bg-white/60 transition-colors">
                 <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-bold uppercase tracking-wider text-[#E9A93B]">
                   <Building2 className="w-4 h-4" />
-                  <span>Accredited Breeders</span>
+                  <span>{t("metricAccreditedBreeders", "Accredited Breeders")}</span>
                 </div>
                 <p className="text-2xl sm:text-3xl font-black text-[#121714] mt-1">
                   {stats?.totalSellers || 3} Institutes
                 </p>
                 <p className="text-[11px] text-[#5B665F]">
-                  Audited by Certification Authority
+                  {t("metricBreedersSub", "Audited by Certification Authority")}
                 </p>
               </div>
 
               <div className="p-3 scroll-reveal stagger-4 rounded-2xl hover:bg-white/60 transition-colors">
                 <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-bold uppercase tracking-wider text-[#2E9E57]">
                   <Award className="w-4 h-4" />
-                  <span>Farmer Satisfaction</span>
+                  <span>{t("metricSatisfaction", "Farmer Satisfaction")}</span>
                 </div>
                 <p className="text-2xl sm:text-3xl font-black text-[#121714] mt-1">
                   98.4%
                 </p>
                 <p className="text-[11px] text-[#5B665F]">
-                  Zero dispute loss on certified seeds
+                  {t("metricSatisfactionSub", "Zero dispute loss on certified seeds")}
                 </p>
               </div>
             </div>
@@ -300,13 +300,13 @@ export const LandingPage: React.FC = () => {
 
             <div className="text-center max-w-2xl mx-auto mb-12 scroll-reveal">
               <span className="text-xs font-bold uppercase tracking-wider text-[#D8503F]">
-                The Agricultural Crisis
+                {t("crisisBadge", "The Agricultural Crisis")}
               </span>
               <h2 className="text-3xl sm:text-4xl font-black text-[#121714] mt-1">
-                Why Millions of Farmers Suffer Crop Loss Every Season
+                {t("crisisHeading", "Why Millions of Farmers Suffer Crop Loss Every Season")}
               </h2>
               <p className="text-xs sm:text-sm text-[#5B665F] mt-2">
-                Traditional seed supply chains leave farmers completely unprotected against counterfeits and delayed deliveries.
+                {t("crisisSub", "Traditional seed supply chains leave farmers completely unprotected against counterfeits and delayed deliveries.")}
               </p>
             </div>
 
@@ -316,10 +316,10 @@ export const LandingPage: React.FC = () => {
                   <AlertTriangle className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg font-extrabold text-[#121714]">
-                  30%+ Spurious & Fake Seeds
+                  {t("crisis1Title", "30%+ Spurious & Fake Seeds")}
                 </h3>
                 <p className="text-xs text-[#5B665F] leading-relaxed">
-                  Unscrupulous traders pack grain leftovers into branded bags. By the time crops fail to germinate, the seller has disappeared with the money.
+                  {t("crisis1Desc", "Unscrupulous traders pack grain leftovers into branded bags. By the time crops fail to germinate, the seller has disappeared with the money.")}
                 </p>
               </div>
 
@@ -328,10 +328,10 @@ export const LandingPage: React.FC = () => {
                   <Coins className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg font-extrabold text-[#121714]">
-                  100% Advance Payment Scams
+                  {t("crisis2Title", "100% Advance Payment Scams")}
                 </h3>
                 <p className="text-xs text-[#5B665F] leading-relaxed">
-                  Farmers are forced to pay before seeing the seed bags. When batches arrive damaged or with low germination, sellers refuse refunds.
+                  {t("crisis2Desc", "Farmers are forced to pay before seeing the seed bags. When batches arrive damaged or with low germination, sellers refuse refunds.")}
                 </p>
               </div>
 
@@ -340,10 +340,10 @@ export const LandingPage: React.FC = () => {
                   <FileCheck2 className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg font-extrabold text-[#121714]">
-                  Photocopied Lab Certificates
+                  {t("crisis3Title", "Photocopied Lab Certificates")}
                 </h3>
                 <p className="text-xs text-[#5B665F] leading-relaxed">
-                  Paper tags and test certificates are easily forged using basic printers. Farmers have no quick way to verify test numbers in real time.
+                  {t("crisis3Desc", "Paper tags and test certificates are easily forged using basic printers. Farmers have no quick way to verify test numbers in real time.")}
                 </p>
               </div>
             </div>
@@ -360,13 +360,13 @@ export const LandingPage: React.FC = () => {
 
             <div className="text-center max-w-2xl mx-auto mb-12 scroll-reveal">
               <span className="text-xs font-bold uppercase tracking-wider text-[#6AB547]">
-                Simplified 4-Step Process
+                {t("processBadge", "Simplified 4-Step Process")}
               </span>
               <h2 className="text-3xl sm:text-4xl font-black text-[#121714] mt-1">
-                How SeedSure Guarantees Quality & Fair Payouts
+                {t("processHeading", "How SeedSure Guarantees Quality & Fair Payouts")}
               </h2>
               <p className="text-xs sm:text-sm text-[#5B665F] mt-2">
-                Automated smart contracts replace blind trust with cryptographic certainty.
+                {t("processSub", "Automated smart contracts replace blind trust with cryptographic certainty.")}
               </p>
             </div>
 
@@ -374,26 +374,26 @@ export const LandingPage: React.FC = () => {
               {[
                 {
                   step: "01",
-                  title: "Certified Breeder Lists Lot",
-                  desc: "Government-accredited laboratories inspect germination %, purity, and vigor. The cryptographic document hash is locked on Ethereum.",
+                  title: t("step1Title", "Certified Breeder Lists Lot"),
+                  desc: t("step1Desc", "Government-accredited laboratories inspect germination %, purity, and vigor. The cryptographic document hash is locked on Ethereum."),
                   icon: FileCheck2
                 },
                 {
                   step: "02",
-                  title: "Payment Held Safely",
-                  desc: "Farmer orders seed quantity. Funds are locked non-custodially in the smart escrow contract. The breeder cannot withdraw prematurely.",
+                  title: t("step2Title", "Payment Held Safely"),
+                  desc: t("step2Desc", "Farmer orders seed quantity. Funds are locked non-custodially in the smart escrow contract. The breeder cannot withdraw prematurely."),
                   icon: Lock
                 },
                 {
                   step: "03",
-                  title: "Scan QR Bag Tag",
-                  desc: "When the seed bag arrives, the farmer scans the physical QR tag. SeedSure re-hashes the lab file with SHA-256 to prove authenticity.",
+                  title: t("step3Title", "Scan QR Bag Tag"),
+                  desc: t("step3Desc", "When the seed bag arrives, the farmer scans the physical QR tag. SeedSure re-hashes the lab file with SHA-256 to prove authenticity."),
                   icon: QrCode
                 },
                 {
                   step: "04",
-                  title: "Confirm & Release",
-                  desc: "Farmer verifies healthy seedling sprouting and clicks 'Confirm Delivery'. The escrow transfers payment and boosts the breeder's score.",
+                  title: t("step4Title", "Confirm & Release"),
+                  desc: t("step4Desc", "Farmer verifies healthy seedling sprouting and clicks 'Confirm Delivery'. The escrow transfers payment and boosts the breeder's score."),
                   icon: Sprout
                 }
               ].map((item, index) => {
@@ -429,34 +429,34 @@ export const LandingPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
               <div className="lg:col-span-6 space-y-4 scroll-reveal">
                 <span className="text-xs font-bold uppercase tracking-wider text-[#6AB547]">
-                  AI Multi-Factor Trust Engine
+                  {t("trustEngineBadge", "AI Multi-Factor Trust Engine")}
                 </span>
                 <h2 className="text-3xl sm:text-4xl font-black text-[#121714] leading-tight">
-                  Seller Reliability Calculated from Real Facts, Not Advertisements
+                  {t("trustEngineHeading", "Seller Reliability Calculated from Real Facts, Not Advertisements")}
                 </h2>
                 <p className="text-sm text-[#5B665F] leading-relaxed">
-                  Unlike traditional e-commerce reviews which can be bought or faked with bots, SeedSure calculates seller scores mathematically across 5 verified vectors:
+                  {t("trustEngineSub", "Unlike traditional e-commerce reviews which can be bought or faked with bots, SeedSure calculates seller scores mathematically across 5 verified vectors:")}
                 </p>
 
                 <div className="space-y-2.5 text-xs text-[#121714]">
                   <div className="flex items-center gap-2 p-2.5 rounded-xl bg-[#EEF3E6]">
                     <Check className="w-4 h-4 text-[#6AB547] shrink-0" />
-                    <span><strong>Lab Certification Ratio (25%):</strong> Validated laboratory testing reports</span>
+                    <span>{t("trustFactor1", "Lab Certification Ratio (25%): Validated laboratory testing reports")}</span>
                   </div>
                   <div className="flex items-center gap-2 p-2.5 rounded-xl bg-[#EEF3E6]">
                     <Check className="w-4 h-4 text-[#6AB547] shrink-0" />
-                    <span><strong>On-Time Logistics (25%):</strong> Proven delivery within promised dates</span>
+                    <span>{t("trustFactor2", "On-Time Logistics (25%): Proven delivery within promised dates")}</span>
                   </div>
                   <div className="flex items-center gap-2 p-2.5 rounded-xl bg-[#EEF3E6]">
                     <Check className="w-4 h-4 text-[#6AB547] shrink-0" />
-                    <span><strong>Smart Escrow Gate (&lt;40):</strong> Sellers below 40 are automatically blocked</span>
+                    <span>{t("trustFactor3", "Smart Escrow Gate (<40): Sellers below 40 are automatically blocked")}</span>
                   </div>
                 </div>
 
                 <div className="pt-2">
                   <Link to="/marketplace">
                     <PillButton variant="primary" size="md" withArrow>
-                      View Top Rated Breeders
+                      {t("viewTopBreedersBtn", "View Top Rated Breeders")}
                     </PillButton>
                   </Link>
                 </div>
@@ -486,13 +486,13 @@ export const LandingPage: React.FC = () => {
           <div className="tint-sage border-y border-[#E1E6DA] px-4 sm:px-10 lg:px-16 py-16 sm:py-20">
             <div className="max-w-3xl mx-auto text-center mb-10 scroll-reveal">
               <span className="text-xs font-bold uppercase tracking-wider text-[#6AB547]">
-                Non-Custodial Smart Escrow
+                {t("escrowBadge", "Non-Custodial Smart Escrow")}
               </span>
               <h2 className="text-3xl sm:text-4xl font-black text-[#121714] mt-1">
-                Zero Advance Risk for Seed Buyers
+                {t("escrowHeading", "Zero Advance Risk for Seed Buyers")}
               </h2>
               <p className="text-xs sm:text-sm text-[#5B665F] mt-2">
-                Click any milestone in the order timeline below to see how the smart contract protects your harvest payment at each step.
+                {t("escrowSub", "Click any milestone in the order timeline below to see how the smart contract protects your harvest payment at each step.")}
               </p>
             </div>
 
@@ -516,7 +516,7 @@ export const LandingPage: React.FC = () => {
                 <div className="p-8 rounded-[24px] bg-white border border-[#E1E6DA] shadow-xs space-y-4 hover:shadow-lg transition-shadow">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-[#5B665F] uppercase">
-                      Physical Bag Security Tag
+                      {t("qrSecBadge", "Physical Bag Security Tag")}
                     </span>
                     <VerifiedBadge isValid={true} showDetails={true} />
                   </div>
@@ -537,7 +537,7 @@ export const LandingPage: React.FC = () => {
                   </div>
 
                   <p className="text-xs text-[#5B665F] leading-relaxed">
-                    Test the verification tool with your device camera or upload a test certificate to witness real-time cryptographic hash confirmation.
+                    {t("qrScanSub", "Test the verification tool with your device camera or upload a test certificate to witness real-time cryptographic hash confirmation.")}
                   </p>
 
                   <div className="flex flex-wrap items-center gap-3">
@@ -547,13 +547,13 @@ export const LandingPage: React.FC = () => {
                       withArrow
                       onClick={() => setExecutionModalOpen(true)}
                     >
-                      Launch Real-Time Tamper Scanner
+                      {t("launchTamperScannerBtn", "Launch Real-Time Tamper Scanner")}
                     </PillButton>
                     <Link
                       to="/verify/seed/1"
                       className="text-xs font-semibold text-[#5B665F] hover:text-[#121714] underline underline-offset-2 transition-colors"
                     >
-                      Open Public Portal
+                      {t("openPublicPortalLink", "Open Public Portal")}
                     </Link>
                   </div>
                 </div>
@@ -561,22 +561,22 @@ export const LandingPage: React.FC = () => {
 
               <div className="lg:col-span-6 space-y-4 scroll-reveal stagger-1">
                 <span className="text-xs font-bold uppercase tracking-wider text-[#6AB547]">
-                  Instant Cryptographic Check
+                  {t("qrSecBadge", "Instant Cryptographic Check")}
                 </span>
                 <h2 className="text-3xl sm:text-4xl font-black text-[#121714] leading-tight">
-                  One Scan with Any Smartphone Detects Counterfeits Instantly
+                  {t("qrScanHeading", "One Scan with Any Smartphone Detects Counterfeits Instantly")}
                 </h2>
                 <p className="text-sm text-[#5B665F] leading-relaxed">
-                  Seed bags labeled with SeedSure QR codes cannot be forged. Even if a counterfeiter changes a single number (e.g. changing germination rate from 70% to 95%), the computed SHA-256 fingerprint changes entirely and fails the blockchain verification.
+                  {t("qrScanSub", "Seed bags labeled with SeedSure QR codes cannot be forged. Even if a counterfeiter changes a single number (e.g. changing germination rate from 70% to 95%), the computed SHA-256 fingerprint changes entirely and fails the blockchain verification.")}
                 </p>
 
                 <div className="p-4 rounded-2xl bg-[#EEF3E6] border border-[#D2ECC3] text-xs text-[#121714] space-y-1">
                   <p className="font-bold flex items-center gap-1.5">
                     <ShieldCheck className="w-4 h-4 text-[#2E9E57]" />
-                    <span>No Special Scanner App Needed</span>
+                    <span>{t("noSpecialAppTitle", "No Special Scanner App Needed")}</span>
                   </p>
                   <p className="text-[#5B665F]">
-                    Works with standard iPhone or Android camera apps, opening the public verification portal directly.
+                    {t("noSpecialAppDesc", "Works with standard iPhone or Android camera apps, opening the public verification portal directly.")}
                   </p>
                 </div>
               </div>
@@ -599,10 +599,10 @@ export const LandingPage: React.FC = () => {
 
             <div className="text-center max-w-xl mx-auto mb-10 scroll-reveal relative z-10">
               <span className="text-xs font-bold uppercase tracking-wider text-[#5B665F]">
-                Tailored Experiences
+                {t("tailoredExpBadge", "Tailored Experiences")}
               </span>
               <h2 className="text-3xl sm:text-4xl font-black text-[#121714] mt-1">
-                Built for Both Seed Buyers & Honest Producers
+                {t("tailoredHeading", "Built for Both Seed Buyers & Honest Producers")}
               </h2>
               
               <div className="inline-flex p-1.5 rounded-full bg-white border border-[#E1E6DA] mt-6 shadow-xs scroll-reveal stagger-1">
@@ -614,7 +614,7 @@ export const LandingPage: React.FC = () => {
                       : "text-[#5B665F] hover:text-[#121714]"
                   }`}
                 >
-                  For Farmers (Seed Buyers)
+                  {t("forFarmersTab", "For Farmers (Seed Buyers)")}
                 </button>
                 <button
                   onClick={() => setActiveGuideTab("seller")}
@@ -624,7 +624,7 @@ export const LandingPage: React.FC = () => {
                       : "text-[#5B665F] hover:text-[#121714]"
                   }`}
                 >
-                  For Breeders & Sellers (Producers)
+                  {t("forBreedersTab", "For Breeders & Sellers (Producers)")}
                 </button>
               </div>
             </div>
@@ -633,36 +633,36 @@ export const LandingPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto relative z-10">
                 <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2 scroll-reveal stagger-1 hover:shadow-md hover:-translate-y-1 transition-all">
                   <div className="text-xs font-bold text-[#6AB547] uppercase">Step 1</div>
-                  <h4 className="font-extrabold text-[#121714]">Browse Certified Seed Varieties</h4>
-                  <p className="text-xs text-[#5B665F]">Inspect laboratory germination %, genetic purity, and seller reliability score before purchasing.</p>
+                  <h4 className="font-extrabold text-[#121714]">{t("fStep1Title", "Browse Certified Seed Varieties")}</h4>
+                  <p className="text-xs text-[#5B665F]">{t("fStep1Desc", "Inspect laboratory germination %, genetic purity, and seller reliability score before purchasing.")}</p>
                 </div>
                 <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2 scroll-reveal stagger-2 hover:shadow-md hover:-translate-y-1 transition-all">
                   <div className="text-xs font-bold text-[#6AB547] uppercase">Step 2</div>
-                  <h4 className="font-extrabold text-[#121714]">Safe Escrow Protection</h4>
-                  <p className="text-xs text-[#5B665F]">Payment is safely locked in smart contract until you receive the seed bags and test seedling viability.</p>
+                  <h4 className="font-extrabold text-[#121714]">{t("fStep2Title", "Safe Escrow Protection")}</h4>
+                  <p className="text-xs text-[#5B665F]">{t("fStep2Desc", "Payment is safely locked in smart contract until you receive the seed bags and test seedling viability.")}</p>
                 </div>
                 <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2 scroll-reveal stagger-3 hover:shadow-md hover:-translate-y-1 transition-all">
                   <div className="text-xs font-bold text-[#6AB547] uppercase">Step 3</div>
-                  <h4 className="font-extrabold text-[#121714]">Raise Dispute if Defective</h4>
-                  <p className="text-xs text-[#5B665F]">Click 'Raise Dispute' anytime if germination fails to freeze funds for an arbitration refund.</p>
+                  <h4 className="font-extrabold text-[#121714]">{t("fStep4Title", "Raise Dispute if Defective")}</h4>
+                  <p className="text-xs text-[#5B665F]">{t("fStep4Desc", "Click 'Raise Dispute' anytime if germination fails to freeze funds for an arbitration refund.")}</p>
                 </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto relative z-10">
                 <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2 scroll-reveal stagger-1 hover:shadow-md hover:-translate-y-1 transition-all">
                   <div className="text-xs font-bold text-[#121714] uppercase">Step 1</div>
-                  <h4 className="font-extrabold text-[#121714]">Institutional Accreditation</h4>
-                  <p className="text-xs text-[#5B665F]">Submit research credentials and obtain Certification Authority verification on-chain.</p>
+                  <h4 className="font-extrabold text-[#121714]">{t("bStep1Title", "Institutional Accreditation")}</h4>
+                  <p className="text-xs text-[#5B665F]">{t("bStep1Desc", "Submit research credentials and obtain Certification Authority verification on-chain.")}</p>
                 </div>
                 <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2 scroll-reveal stagger-2 hover:shadow-md hover:-translate-y-1 transition-all">
                   <div className="text-xs font-bold text-[#121714] uppercase">Step 2</div>
-                  <h4 className="font-extrabold text-[#121714]">Upload Lab Test Certificates</h4>
-                  <p className="text-xs text-[#5B665F]">Smart contracts generate cryptographic QR tags to label your physical seed packages.</p>
+                  <h4 className="font-extrabold text-[#121714]">{t("bStep2Title", "Upload Lab Test Certificates")}</h4>
+                  <p className="text-xs text-[#5B665F]">{t("bStep2Desc", "Smart contracts generate cryptographic QR tags to label your physical seed packages.")}</p>
                 </div>
                 <div className="p-6 rounded-[20px] bg-white border border-[#E1E6DA] shadow-xs space-y-2 scroll-reveal stagger-3 hover:shadow-md hover:-translate-y-1 transition-all">
                   <div className="text-xs font-bold text-[#121714] uppercase">Step 3</div>
-                  <h4 className="font-extrabold text-[#121714]">Instant Payout & Score Boost</h4>
-                  <p className="text-xs text-[#5B665F]">When delivery is confirmed, smart escrow unlocks payment automatically and boosts your trust score.</p>
+                  <h4 className="font-extrabold text-[#121714]">{t("bStep5Title", "Instant Payout & Score Boost")}</h4>
+                  <p className="text-xs text-[#5B665F]">{t("bStep5Desc", "When delivery is confirmed, smart escrow unlocks payment automatically and boosts your trust score.")}</p>
                 </div>
               </div>
             )}
@@ -679,7 +679,7 @@ export const LandingPage: React.FC = () => {
                   )
                 }
               >
-                {activeGuideTab === "farmer" ? "Launch Farmer Portal" : "Launch Breeder Hub"}
+                {activeGuideTab === "farmer" ? t("launchFarmerPortalBtn", "Launch Farmer Portal") : t("launchBreederHubBtn", "Launch Breeder Hub")}
               </PillButton>
             </div>
           </div>
@@ -695,10 +695,10 @@ export const LandingPage: React.FC = () => {
 
             <div className="text-center max-w-2xl mx-auto mb-12 scroll-reveal relative z-10">
               <span className="text-xs font-bold uppercase tracking-wider text-[#5B665F]">
-                Clear Answers
+                {t("faqBadge", "Clear Answers")}
               </span>
               <h2 className="text-3xl sm:text-4xl font-black text-[#121714] mt-1">
-                Frequently Asked Questions
+                {t("faqHeading", "Frequently Asked Questions")}
               </h2>
             </div>
 
@@ -754,23 +754,23 @@ export const LandingPage: React.FC = () => {
             <div className="max-w-3xl mx-auto relative z-10 space-y-5 scroll-reveal-scale">
               <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/10 text-[#6AB547] text-xs font-bold border border-white/10 backdrop-blur-xs">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Join the Honest Agricultural Network</span>
+                <span>{t("ctaNetworkBadge", "Join the Honest Agricultural Network")}</span>
               </div>
               <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
-                Start Purchasing Certified Seeds with Zero Upfront Risk Today
+                {t("ctaMainHeading", "Start Purchasing Certified Seeds with Zero Upfront Risk Today")}
               </h2>
               <p className="text-xs sm:text-sm text-[#A2B1A8] max-w-xl mx-auto leading-relaxed">
-                Connect with accredited breeders across India and protect every rupee of your hard-earned harvest investment.
+                {t("ctaMainSub", "Connect with accredited breeders across India and protect every rupee of your hard-earned harvest investment.")}
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
                 <Link to="/marketplace">
                   <PillButton variant="primary" size="lg" withArrow>
-                    Explore Seed Marketplace
+                    {t("exploreMarketplaceBtn", "Explore Seed Marketplace")}
                   </PillButton>
                 </Link>
                 <Link to="/login">
                   <PillButton variant="secondary" size="lg">
-                    Login with Kisan ID
+                    {t("loginKisanIdBtn", "Login with Kisan ID")}
                   </PillButton>
                 </Link>
               </div>

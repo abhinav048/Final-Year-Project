@@ -118,14 +118,14 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({ currentAddress
           <div>
             <div className="flex items-center gap-2">
               <TagPill icon={<Sparkles className="w-3.5 h-3.5 text-[#6AB547]" />}>
-                Verified On-Chain Lots
+                {t("verifiedOnChainLots", "Verified On-Chain Lots")}
               </TagPill>
             </div>
             <h1 className="font-extrabold text-2xl sm:text-3xl text-[#121714] mt-2">
               {t("marketplaceTitle")}
             </h1>
             <p className="text-xs sm:text-sm text-[#5B665F] mt-1">
-              {t("marketplaceSubtitle")} • Payments held safely in non-custodial smart escrow
+              {t("marketplaceSubtitle")} • {t("safeEscrowNote", "Payments held safely in non-custodial smart escrow")}
             </p>
           </div>
 
@@ -199,17 +199,17 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({ currentAddress
           <div className="text-center py-20">
             <div className="inline-block w-8 h-8 border-3 border-[#6AB547] border-t-transparent rounded-full animate-spin" />
             <p className="text-xs text-[#5B665F] mt-3 font-semibold">
-              Querying verified seed records on smart contract...
+              {t("queryingSeeds", "Querying verified seed records on smart contract...")}
             </p>
           </div>
         ) : seeds.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-[24px] border border-[#E1E6DA]">
             <Sprout className="w-12 h-12 text-[#6AB547] mx-auto mb-3" />
             <h3 className="font-extrabold text-base text-[#121714]">
-              No Seed Batches Match Filters
+              {t("noSeedsMatch", "No Seed Batches Match Filters")}
             </h3>
             <p className="text-xs text-[#5B665F] max-w-sm mx-auto mt-1">
-              Try adjusting your crop category search or reducing the minimum seller reliability threshold.
+              {t("noSeedsMatchSub", "Try adjusting your crop category search or reducing the minimum seller reliability threshold.")}
             </p>
           </div>
         ) : (
@@ -255,7 +255,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({ currentAddress
                     <div className="p-3 rounded-xl bg-[#F7F8F3] border border-[#E1E6DA] flex items-center justify-between">
                       <div className="truncate max-w-[150px]">
                         <p className="text-[10px] text-[#5B665F] uppercase font-bold tracking-wider">
-                          Breeder / Producer
+                          {t("breederProducer", "Breeder / Producer")}
                         </p>
                         <p className="text-xs font-bold text-[#121714] truncate">
                           {seed.sellerName}
@@ -288,7 +288,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({ currentAddress
                       </div>
                       <div className="p-2 rounded-xl bg-[#F7F8F3] border border-[#E1E6DA]">
                         <p className="text-[10px] font-bold text-[#5B665F]">
-                          Vigor
+                          {t("vigor", "Vigor")}
                         </p>
                         <p className="font-bold text-sm text-[#121714]">
                           {seed.vigor}%
@@ -333,7 +333,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({ currentAddress
                           withArrow
                           onClick={() => handleOpenBuy(seed)}
                         >
-                          Buy with Escrow
+                          {t("buyEscrowBtn", "Buy with Escrow")}
                         </PillButton>
                       )}
                     </div>
@@ -461,7 +461,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({ currentAddress
 
                 <div className="flex justify-end gap-2 pt-2">
                   <PillButton variant="ghost" size="sm" onClick={() => setSelectedSeedForBuy(null)}>
-                    Cancel
+                    {t("cancel", "Cancel")}
                   </PillButton>
                   <PillButton
                     variant="primary"
@@ -470,7 +470,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({ currentAddress
                     isLoading={buyLoading}
                     onClick={handleConfirmBuy}
                   >
-                    Confirm & Lock Escrow
+                    {t("buyEscrowBtn", "Confirm & Lock Escrow")}
                   </PillButton>
                 </div>
               </div>

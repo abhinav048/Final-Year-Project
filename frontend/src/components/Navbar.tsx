@@ -30,7 +30,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenOnboarding
 }) => {
   const { user, logout } = useAuth();
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -64,18 +64,18 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   const navLinks = [
-    { label: "Home", path: "/" },
-    { label: "Marketplace", path: "/marketplace" },
-    { label: "How it works", path: "/#how-it-works" },
-    { label: "Trust score", path: "/#trust-score" },
-    { label: "Verify Bag", path: "/verify/seed/1" },
-    { label: "FAQ", path: "/#faq" }
+    { label: t("home", "Home"), path: "/" },
+    { label: t("marketplace", "Marketplace"), path: "/marketplace" },
+    { label: t("howItWorks", "How it works"), path: "/#how-it-works" },
+    { label: t("trustScore", "Trust score"), path: "/#trust-score" },
+    { label: t("verifyBag", "Verify Bag"), path: "/verify/seed/1" },
+    { label: t("faq", "FAQ"), path: "/#faq" }
   ];
 
   const getPortalInfo = (role: UserRole) => {
-    if (role === "farmer") return { label: "Farmer Portal", path: "/farmer", icon: "🌾" };
-    if (role === "seller") return { label: "Breeder Hub", path: "/seller", icon: "🏢" };
-    return { label: "CA Console", path: "/admin", icon: "🛡️" };
+    if (role === "farmer") return { label: t("farmerPortal", "Farmer Portal"), path: "/farmer", icon: "🌾" };
+    if (role === "seller") return { label: t("breederHub", "Breeder Hub"), path: "/seller", icon: "🏢" };
+    return { label: t("caConsole", "CA Console"), path: "/admin", icon: "🛡️" };
   };
 
   return (
@@ -205,14 +205,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="h-7 px-2 sm:px-2.5 rounded-full bg-[#FDF2F0] hover:bg-[#D8503F] text-[#D8503F] hover:text-white text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer"
               >
                 <LogOut className="w-3 h-3" />
-                <span className="hidden md:inline">Log out</span>
+                <span className="hidden md:inline">{t("logout", "Log out")}</span>
               </button>
             </div>
           ) : (
             <div className="hidden sm:block">
               <Link to="/login">
                 <PillButton variant="secondary" size="sm">
-                  Log In
+                  {t("login", "Log In")}
                 </PillButton>
               </Link>
             </div>
@@ -227,7 +227,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 withArrow
                 onClick={onConnectWallet}
               >
-                Get Started
+                {t("getStarted", "Get Started")}
               </PillButton>
             </div>
           )}
@@ -236,7 +236,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {user && isWalletConnected && (
             <div className="hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#EEF8F1] border border-[#B8E4C7] text-[#2E9E57] text-xs font-bold shadow-xs">
               <Wallet className="w-3.5 h-3.5" />
-              <span>Wallet Connected</span>
+              <span>{t("walletConnected", "Wallet Connected")}</span>
             </div>
           )}
 
@@ -269,14 +269,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="px-2.5 py-1 rounded-full bg-[#FDF2F0] text-[#D8503F] text-xs font-bold flex items-center gap-1 hover:bg-[#D8503F] hover:text-white transition-colors"
               >
                 <LogOut className="w-3 h-3" />
-                <span>Logout</span>
+                <span>{t("logout", "Logout")}</span>
               </button>
             </div>
           ) : (
             <div className="sm:hidden">
               <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
                 <PillButton variant="primary" size="sm" className="w-full">
-                  Log In to Portal
+                  {t("login", "Log In to Portal")}
                 </PillButton>
               </Link>
             </div>
@@ -344,7 +344,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   setMobileMenuOpen(false);
                 }}
               >
-                Connect Wallet
+                {t("connectWallet", "Connect Wallet")}
               </PillButton>
             )}
             {onOpenOnboarding && (
@@ -356,7 +356,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   setMobileMenuOpen(false);
                 }}
               >
-                Beginner Tour
+                {t("beginnerTour", "Beginner Tour")}
               </PillButton>
             )}
           </div>
