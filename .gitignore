@@ -43,3 +43,23 @@ PDF/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Python & ML Cache
+__pycache__/
+*/__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+venv/
+.venv/
+env/
+ml_service/.cache/
+ml_service/__pycache__/
+
+# Large Model Weights (>100MB, excluded from Git)
+ml_service/models/*.pth
+ml_service/models/*.pt
+!ml_service/models/.gitkeep
+!ml_service/models/README.md
+
+

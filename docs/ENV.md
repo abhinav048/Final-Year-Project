@@ -27,8 +27,18 @@ This document details every environment variable used across the SeedSure fronte
 | `PINATA_JWT` | Backend | Render Secrets | Pinata API token for IPFS certificate pin requests | Falls back to simulated local IPFS CID generation |
 | `PINATA_GATEWAY` | Backend | Render Secrets | Public or dedicated IPFS gateway domain | Defaults to `https://gateway.pinata.cloud/ipfs/` |
 | `CORS_ORIGIN` | Backend | Local / Render | Allowed frontend origins (comma-separated) | Defaults to `http://localhost:5173` |
+| `ML_SERVICE_URL` | Backend | Local / Render | FastAPI ML service base URL | Defaults to `http://127.0.0.1:8000` (CLI fallback) |
+| `ML_WEIGHTS_PATH` | Backend / ML | Local / Render | Path to `best_vit.pth` weights | Defaults to `ml_service/models/best_vit.pth` |
 
 ---
+
+## 2.1 Python ML Service (`ml_service/.env`)
+
+| Variable | Scope | Set In | Purpose | Fallback / If Missing |
+| :--- | :--- | :--- | :--- | :--- |
+| `PORT` | ML Service | Local / Cloud | FastAPI HTTP server port | Defaults to `8000` |
+| `MODEL_WEIGHTS_PATH` | ML Service | Local / Cloud | Absolute/relative path to ViT checkpoint | `ml_service/models/best_vit.pth` |
+| `DEVICE` | ML Service | Local / Cloud | PyTorch compute device (`cuda` or `cpu`) | Automatically selects CUDA if available, else CPU |
 
 ## 3. Blockchain (`blockchain/.env`)
 

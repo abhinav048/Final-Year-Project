@@ -91,3 +91,43 @@ In production (managed Postgres on Neon/Supabase):
    - [QuickNode Multi-Chain Faucet](https://faucet.quicknode.com/ethereum/sepolia)
    - [PoW Faucet](https://sepolia-faucet.pk910.de)
 2. **Offline Fallback Demo**: In demo/presentation mode where testnet connectivity is lost, activate the seeded local offline fixtures or use local node (`make dev`).
+
+---
+
+## 6. Vision Transformer (ViT-B/16) ML Service Operations
+
+### 6.1 Checking Service & Checkpoint Health
+Verify model weights and class mapping:
+```bash
+python ml_service/inference_cli.py --health-check
+```
+Expected output:
+```json
+{
+  "status": "healthy",
+  "modelVersion": "SeedSure-ViT-B16-v1.0",
+  "checkpointAvailable": true,
+  "weightsPath": "ml_service/models/best_vit.pth",
+  "classes": ["Broken", "Immature", "Intact", "Skin-damaged", "Spotted"],
+  "qualityWeights": { "Intact": 100.0, "Immature": 55.0, "Spotted": 40.0, "Skin-damaged": 35.0, "Broken": 10.0 },
+  "supportedCrops": ["Soybean"]
+}
+```
+
+### 6.2 Adding or Updating Trained Weights
+When replacing research weights with newly trained checkpoints:
+1. Ensure the PyTorch state dict corresponds to the custom ViT-B/16 head:
+   `head = nn.Sequential(nn.Dropout(0.5), nn.Linear(768, 256), nn.ReLU(), nn.Dropout(0.3), nn.Linear(256, 5))`
+2. Copy the `.pth` file to:
+   ```bash
+   cp path/to/trained_vit.pth ml_service/models/best_vit.pth
+   ```
+3. Run the health check CLI to ensure PyTorch loads the state dict cleanly.
+
+### 6.3 Starting FastAPI Inference Server
+```bash
+cd ml_service
+uvicorn main:app --port 8000 --reload
+```
+*Note: If the FastAPI HTTP server is not running, the Node.js backend automatically runs `ml_service/inference_cli.py` via subprocess without breaking inference.*
+

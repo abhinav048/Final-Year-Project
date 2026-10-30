@@ -120,12 +120,33 @@ export function initDatabase() {
     CREATE TABLE IF NOT EXISTS trust_score_history (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       sellerAddress TEXT NOT NULL,
+      previousScore INTEGER DEFAULT 50,
       score INTEGER NOT NULL,
       riskCategory TEXT NOT NULL,
       modelVersion TEXT NOT NULL,
       featuresHash TEXT NOT NULL,
       featuresJson TEXT NOT NULL,
       triggerEvent TEXT NOT NULL,
+      reason TEXT DEFAULT 'Dynamic Score Recalculation',
+      createdAt TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS seed_quality_reports (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      batchId INTEGER,
+      batchNumber TEXT NOT NULL,
+      sellerAddress TEXT NOT NULL,
+      cropType TEXT NOT NULL,
+      variety TEXT,
+      visualQualityScore REAL NOT NULL,
+      qualityCategory TEXT NOT NULL,
+      totalImages INTEGER NOT NULL,
+      distributionJson TEXT NOT NULL,
+      predictionsJson TEXT NOT NULL,
+      reportCID TEXT,
+      reportHash TEXT,
+      modelVersion TEXT NOT NULL,
+      disclaimer TEXT,
       createdAt TEXT NOT NULL
     );
 
@@ -140,7 +161,35 @@ export function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_feedback_seller ON feedback(sellerAddress);
     CREATE INDEX IF NOT EXISTS idx_disputes_order ON disputes(orderId);
     CREATE INDEX IF NOT EXISTS idx_trust_seller ON trust_score_history(sellerAddress);
+    CREATE INDEX IF NOT EXISTS idx_reports_batch ON seed_quality_reports(batchId);
+    CREATE INDEX IF NOT EXISTS idx_reports_seller ON seed_quality_reports(sellerAddress);
   `);
+
+  // Run schema migrations for enhanced ML seed quality & trust score fields
+  const safeAddColumn = (table: string, columnDef: string) => {
+    try {
+      db.exec(`ALTER TABLE ${table} ADD COLUMN ${columnDef}`);
+    } catch {}
+  };
+
+  safeAddColumn("seeds", "aiVisualQualityScore REAL DEFAULT NULL");
+  safeAddColumn("seeds", "aiQualityCategory TEXT DEFAULT NULL");
+  safeAddColumn("seeds", "aiReportCID TEXT DEFAULT NULL");
+  safeAddColumn("seeds", "aiReportHash TEXT DEFAULT NULL");
+  safeAddColumn("seeds", "aiModelVersion TEXT DEFAULT NULL");
+  safeAddColumn("seeds", "aiAnalyzedAt TEXT DEFAULT NULL");
+  safeAddColumn("seeds", "seedOrigin TEXT DEFAULT NULL");
+  safeAddColumn("seeds", "imagesJson TEXT DEFAULT '[]'");
+  safeAddColumn("seeds", "aiClassDistributionJson TEXT DEFAULT NULL");
+
+  safeAddColumn("sellers", "avgAiQualityScore REAL DEFAULT 85.0");
+  safeAddColumn("sellers", "trustCategory TEXT DEFAULT 'Moderate'");
+  safeAddColumn("sellers", "confidenceLevel TEXT DEFAULT 'Moderate'");
+  safeAddColumn("sellers", "dataCoveragePercent INTEGER DEFAULT 75");
+  safeAddColumn("sellers", "isNewSeller INTEGER DEFAULT 0");
+
+  safeAddColumn("trust_score_history", "previousScore INTEGER DEFAULT 50");
+  safeAddColumn("trust_score_history", "reason TEXT DEFAULT 'Dynamic Score Recalculation'");
 
   // Seed sample data if empty
   const countRow = db.prepare("SELECT count(*) as count FROM sellers").get() as { count: number };

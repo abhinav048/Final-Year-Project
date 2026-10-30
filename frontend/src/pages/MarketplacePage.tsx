@@ -251,6 +251,14 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({ currentAddress
                       </p>
                     </div>
 
+                    {/* AI Visual Quality Badge (ViT-B/16) */}
+                    {seed.aiVisualQualityScore != null && (
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#EEF8F1] border border-[#B8E4C7] text-[10px] font-bold text-[#2E9E57]">
+                        <Sparkles className="w-3.5 h-3.5 text-[#2E9E57] shrink-0" />
+                        <span>AI Visual: {seed.aiVisualQualityScore.toFixed(1)}/100 ({seed.aiQualityCategory || "Good"})</span>
+                      </div>
+                    )}
+
                     {/* Seller & Trust Score */}
                     <div className="p-3 rounded-xl bg-[#F7F8F3] border border-[#E1E6DA] flex items-center justify-between">
                       <div className="truncate max-w-[150px]">

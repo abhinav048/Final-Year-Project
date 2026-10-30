@@ -12,6 +12,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 contract SeedRegistry is AccessControl {
     bytes32 public constant CERTIFIER_ROLE = keccak256("CERTIFIER_ROLE");
     bytes32 public constant MARKETPLACE_ROLE = keccak256("MARKETPLACE_ROLE");
+    bytes32 public constant ORACLE_ROLE = keccak256("ORACLE_ROLE");
 
     enum BatchStatus {
         Pending,
@@ -49,9 +50,21 @@ contract SeedRegistry is AccessControl {
         string revocationReason;
     }
 
+    // AI Visual Seed Quality Assessment Record
+    struct AIQualityRecord {
+        uint8 visualQualityScore; // 0 to 100
+        string qualityCategory; // "Excellent" | "Good" | "Moderate" | "Poor" | "Very Poor"
+        string reportCID; // IPFS CID of detailed batch assessment
+        bytes32 reportHash; // SHA-256 hash of full batch report
+        string modelVersion; // e.g. "SeedSure-ViT-B16-v1.0"
+        uint256 assessedAt;
+        bool isAssessed;
+    }
+
     uint256 private _batchIdCounter;
     mapping(uint256 => Batch) private _batches;
     mapping(uint256 => BatchMetadata) private _batchMetadata;
+    mapping(uint256 => AIQualityRecord) private _qualityAssessments;
     mapping(bytes32 => bool) private _registeredHashes;
 
     event BatchRegistered(
@@ -63,10 +76,21 @@ contract SeedRegistry is AccessControl {
     event BatchCertified(uint256 indexed batchId, address indexed certifier);
     event BatchRevoked(uint256 indexed batchId, address indexed certifier, string reason);
     event BatchQuantityUpdated(uint256 indexed batchId, uint256 remainingQuantity);
+    event BatchQualityAssessed(
+        uint256 indexed batchId,
+        uint8 visualQualityScore,
+        string qualityCategory,
+        string reportCID,
+        bytes32 reportHash,
+        string modelVersion,
+        uint256 assessedAt
+    );
 
     constructor(address defaultAdmin, address initialCertifier) {
         _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
         _grantRole(CERTIFIER_ROLE, initialCertifier);
+        _grantRole(ORACLE_ROLE, defaultAdmin);
+        _grantRole(ORACLE_ROLE, initialCertifier);
     }
 
     /**
@@ -207,5 +231,70 @@ contract SeedRegistry is AccessControl {
      */
     function totalBatches() external view returns (uint256) {
         return _batchIdCounter;
+    }
+
+    /**
+     * @notice Push verified AI visual seed quality score and IPFS report hash
+     */
+    function recordBatchQualityAssessment(
+        uint256 batchId,
+        uint8 visualQualityScore,
+        string calldata qualityCategory,
+        string calldata reportCID,
+        bytes32 reportHash,
+        string calldata modelVersion
+    ) external onlyRole(ORACLE_ROLE) {
+        require(batchId > 0 && batchId <= _batchIdCounter, "Invalid batch ID");
+        require(visualQualityScore <= 100, "Score must be <= 100");
+        require(reportHash != bytes32(0), "Report hash required");
+
+        _qualityAssessments[batchId] = AIQualityRecord({
+            visualQualityScore: visualQualityScore,
+            qualityCategory: qualityCategory,
+            reportCID: reportCID,
+            reportHash: reportHash,
+            modelVersion: modelVersion,
+            assessedAt: block.timestamp,
+            isAssessed: true
+        });
+
+        emit BatchQualityAssessed(
+            batchId,
+            visualQualityScore,
+            qualityCategory,
+            reportCID,
+            reportHash,
+            modelVersion,
+            block.timestamp
+        );
+    }
+
+    /**
+     * @notice Retrieve on-chain AI visual quality assessment for a batch
+     */
+    function getBatchQualityAssessment(uint256 batchId)
+        external
+        view
+        returns (
+            uint8 visualQualityScore,
+            string memory qualityCategory,
+            string memory reportCID,
+            bytes32 reportHash,
+            string memory modelVersion,
+            uint256 assessedAt,
+            bool isAssessed
+        )
+    {
+        require(batchId > 0 && batchId <= _batchIdCounter, "Invalid batch ID");
+        AIQualityRecord memory r = _qualityAssessments[batchId];
+        return (
+            r.visualQualityScore,
+            r.qualityCategory,
+            r.reportCID,
+            r.reportHash,
+            r.modelVersion,
+            r.assessedAt,
+            r.isAssessed
+        );
     }
 }

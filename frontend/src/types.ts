@@ -1,9 +1,55 @@
+export interface ImagePrediction {
+  imageId: string;
+  predictedClass: "Intact" | "Broken" | "Immature" | "Skin-damaged" | "Spotted";
+  classProbabilities: {
+    Intact: number;
+    Broken: number;
+    Immature: number;
+    "Skin-damaged": number;
+    Spotted: number;
+  };
+  confidence: number;
+  filename?: string;
+  previewUrl?: string;
+}
+
+export interface ClassDistribution {
+  Intact: number;
+  Immature: number;
+  Spotted: number;
+  "Skin-damaged": number;
+  Broken: number;
+}
+
+export interface AIQualityReport {
+  id?: number;
+  batchId: string | number;
+  batchNumber?: string;
+  cropType?: string;
+  variety?: string;
+  sellerAddress?: string;
+  visualQualityScore: number;
+  qualityCategory: "Excellent" | "Good" | "Moderate" | "Poor" | "Very Poor";
+  totalImagesAnalyzed: number;
+  totalImages?: number;
+  classDistribution: ClassDistribution;
+  classCounts?: Record<string, number>;
+  qualityWeights?: Record<string, number>;
+  predictions: ImagePrediction[];
+  reportCID: string;
+  reportHash: string;
+  modelVersion: string;
+  assessedAt: string;
+  disclaimer: string;
+}
+
 export interface SeedBatch {
   id: number;
   sellerAddress: string;
   sellerName?: string;
   sellerTrustScore?: number;
   sellerRiskCategory?: string;
+  sellerTrustCategory?: string;
   sellerVerified?: number;
   name: string;
   cropType: string;
@@ -29,6 +75,20 @@ export interface SeedBatch {
   createdAt: string;
   reviews?: Feedback[];
   trustExplanation?: TrustExplanation;
+
+  // AI Visual Seed Quality Assessment Fields (§3, §4, §5)
+  aiVisualQualityScore?: number;
+  aiQualityCategory?: "Excellent" | "Good" | "Moderate" | "Poor" | "Very Poor" | string;
+  aiReportCID?: string;
+  aiReportHash?: string;
+  aiModelVersion?: string;
+  aiAnalyzedAt?: string;
+  aiClassDistribution?: ClassDistribution;
+  aiClassDistributionJson?: string;
+  images?: string[];
+  imagesJson?: string;
+  seedOrigin?: string;
+  qualityReport?: AIQualityReport;
 }
 
 export interface Seller {
@@ -41,6 +101,12 @@ export interface Seller {
   isSuspended: number;
   trustScore: number;
   riskCategory: "Excellent" | "Trusted" | "Moderate" | "Low" | "High Risk";
+  trustCategory?: "Highly Trusted" | "Trusted" | "Average" | "Low Trust" | "Poor Trust" | "New Seller – Insufficient Data";
+  confidenceLevel?: "High" | "Moderate" | "Low";
+  dataCoveragePercent?: number;
+  isNewSeller?: number | boolean;
+  avgAiQualityScore?: number;
+  recommendations?: string[];
   totalOrders: number;
   successfulOrders: number;
   failedOrders: number;
@@ -77,6 +143,11 @@ export interface Order {
   escrowReleased: number;
   trackingNumber?: string;
   carrierName?: string;
+  aiVisualQualityScore?: number;
+  aiQualityCategory?: string;
+  aiReportCID?: string;
+  sellerTrustScore?: number;
+  sellerRiskCategory?: string;
   shippedAt?: string;
   deliveredAt?: string;
   completedAt?: string;
@@ -108,7 +179,12 @@ export interface ScoreBreakdownItem {
 export interface TrustExplanation {
   trustScore: number;
   riskCategory: "Excellent" | "Trusted" | "Moderate" | "Low" | "High Risk";
+  trustCategory?: "Highly Trusted" | "Trusted" | "Average" | "Low Trust" | "Poor Trust" | "New Seller – Insufficient Data";
   confidence: number;
+  confidenceLevel?: "High" | "Moderate" | "Low";
+  dataCoveragePercent?: number;
+  isNewSeller?: boolean;
+  recommendations?: string[];
   modelVersion: string;
   featuresHash: string;
   breakdown: ScoreBreakdownItem[];
@@ -118,11 +194,13 @@ export interface TrustExplanation {
 export interface ScoreHistoryRecord {
   id: number;
   sellerAddress: string;
+  previousScore?: number;
   score: number;
   riskCategory: string;
   modelVersion: string;
   featuresHash: string;
   triggerEvent: string;
+  reason?: string;
   createdAt: string;
 }
 

@@ -2,6 +2,8 @@ import { Router, Request, Response } from "express";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { execFile } from "child_process";
+import { promisify } from "util";
 import { db } from "./db.js";
 import { computeSha256, CONTRACT_ADDRESSES, CONTRACT_ABIS, DEFAULT_ACCOUNTS } from "./contracts.js";
 import { calculateTrustScore, SellerFeatures } from "./mlScorer.js";
@@ -11,6 +13,8 @@ import {
   recordSessionTransaction,
   verifyCertificateHashOnChain
 } from "./blockchain.js";
+
+const execFileAsync = promisify(execFile);
 
 export const router = Router();
 
@@ -29,10 +33,22 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Helper to recompute seller features and score
-function syncSellerScore(sellerAddress: string, triggerEvent: string) {
+// Helper to recompute seller features and score with auditable reason
+export function syncSellerScore(sellerAddress: string, triggerEvent: string, reason?: string) {
   const seller = db.prepare("SELECT * FROM sellers WHERE address = ?").get(sellerAddress) as any;
   if (!seller) return null;
+
+  // 1. Fetch historical average AI Visual Seed Quality Score from verified batches
+  const qualityQuery = db.prepare(`
+    SELECT AVG(aiVisualQualityScore) as avgQuality, COUNT(*) as assessedCount 
+    FROM seeds 
+    WHERE sellerAddress = ? AND aiVisualQualityScore IS NOT NULL AND aiVisualQualityScore > 0
+  `).get(sellerAddress) as { avgQuality: number | null; assessedCount: number };
+
+  const avgAiQuality = qualityQuery?.avgQuality != null 
+    ? parseFloat(qualityQuery.avgQuality.toFixed(2)) 
+    : (seller.avgAiQualityScore || 75.0);
+  const aiAssessedCount = qualityQuery?.assessedCount || 0;
 
   const features: SellerFeatures = {
     sellerAddress: seller.address,
@@ -48,37 +64,63 @@ function syncSellerScore(sellerAddress: string, triggerEvent: string) {
     avgFarmerRating: seller.avgFarmerRating,
     ratingCount: seller.ratingCount,
     accountAgeDays: Math.max(1, Math.round((Date.now() - new Date(seller.registeredAt).getTime()) / (1000 * 3600 * 24))),
-    daysSinceLastActivity: 1
+    daysSinceLastActivity: 1,
+    avgAiQualityScore: avgAiQuality,
+    aiAssessedBatchesCount: aiAssessedCount,
+    isCaVerified: seller.isVerified
   };
 
   const scoreResult = calculateTrustScore(features);
+  const previousScore = seller.trustScore || 50;
+  const auditReason = reason || `Dynamic trust score recalculated (${triggerEvent || "METRIC_UPDATE"})`;
 
+  // Update seller record with comprehensive metrics
   db.prepare(`
     UPDATE sellers 
-    SET trustScore = ?, riskCategory = ?, updatedAt = ?
+    SET trustScore = ?, 
+        riskCategory = ?, 
+        trustCategory = ?,
+        confidenceLevel = ?,
+        dataCoveragePercent = ?,
+        isNewSeller = ?,
+        avgAiQualityScore = ?,
+        updatedAt = ?
     WHERE address = ?
-  `).run(scoreResult.trustScore, scoreResult.riskCategory, new Date().toISOString(), sellerAddress);
+  `).run(
+    scoreResult.trustScore,
+    scoreResult.riskCategory,
+    scoreResult.trustCategory,
+    scoreResult.confidenceLevel,
+    scoreResult.dataCoveragePercent,
+    scoreResult.isNewSeller ? 1 : 0,
+    avgAiQuality,
+    new Date().toISOString(),
+    sellerAddress
+  );
 
+  // Record immutable history log with previous score and explicit human-auditable reason
   db.prepare(`
     INSERT INTO trust_score_history (
-      sellerAddress, score, riskCategory, modelVersion, featuresHash, featuresJson, triggerEvent, createdAt
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      sellerAddress, previousScore, score, riskCategory, modelVersion, featuresHash, featuresJson, triggerEvent, reason, createdAt
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     sellerAddress,
+    previousScore,
     scoreResult.trustScore,
     scoreResult.riskCategory,
     scoreResult.modelVersion,
     scoreResult.featuresHash,
     JSON.stringify(scoreResult.rawFeatures),
     triggerEvent || "SCORE_UPDATE",
+    auditReason,
     new Date().toISOString()
   );
 
   recordSessionTransaction(
     "TrustScoreRegistry",
-    "TrustScoreUpdated",
+    "TrustScoreUpdatedWithReason",
     DEFAULT_ACCOUNTS.oracle,
-    `Dynamic ML Oracle updated score to ${scoreResult.trustScore}/100 (${scoreResult.riskCategory}) for ${sellerAddress} [featuresHash: ${scoreResult.featuresHash.slice(0, 10)}...]`
+    `Dynamic Oracle updated trust score: ${previousScore} → ${scoreResult.trustScore}/100 (${scoreResult.trustCategory}) for ${sellerAddress}. Reason: ${auditReason} [featuresHash: ${scoreResult.featuresHash.slice(0, 10)}...]`
   );
 
   return scoreResult;
@@ -205,7 +247,9 @@ router.post("/seeds", (req: Request, res: Response) => {
     sellerAddress, name, cropType, variety, batchNumber, manufacturer,
     germinationRate, purity, vigor, moisture, diseaseResistance,
     harvestDate, expiryDate, pricePerKg, availableQuantityKg,
-    metadataCID, certificateCID, certificateText
+    metadataCID, certificateCID, certificateText,
+    aiVisualQualityScore, aiQualityCategory, aiReportCID, aiReportHash,
+    aiModelVersion, aiAnalyzedAt, aiClassDistributionJson, imagesJson, seedOrigin
   } = req.body;
 
   if (!sellerAddress || !name || !batchNumber || !pricePerKg) {
@@ -229,18 +273,33 @@ router.post("/seeds", (req: Request, res: Response) => {
         sellerAddress, name, cropType, variety, batchNumber, manufacturer,
         germinationRate, purity, vigor, moisture, diseaseResistance, harvestDate,
         expiryDate, pricePerKg, availableQuantityKg, metadataCID, certificateCID,
-        certificateHash, certificationStatus, isDemo, createdAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', 1, ?)
+        certificateHash, certificationStatus, isDemo, createdAt,
+        aiVisualQualityScore, aiQualityCategory, aiReportCID, aiReportHash,
+        aiModelVersion, aiAnalyzedAt, aiClassDistributionJson, imagesJson, seedOrigin
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       sellerAddress, name, cropType, variety, batchNumber, manufacturer,
       germinationRate, purity, vigor, moisture, diseaseResistance, harvestDate,
       expiryDate, pricePerKg, availableQuantityKg, metadataCID || "bafybeimeta" + Date.now(),
-      certificateCID || "bafybeicert" + Date.now(), certHash, new Date().toISOString()
+      certificateCID || "bafybeicert" + Date.now(), certHash, new Date().toISOString(),
+      aiVisualQualityScore != null ? Number(aiVisualQualityScore) : null,
+      aiQualityCategory || null,
+      aiReportCID || null,
+      aiReportHash || null,
+      aiModelVersion || null,
+      aiAnalyzedAt || null,
+      aiClassDistributionJson ? (typeof aiClassDistributionJson === "string" ? aiClassDistributionJson : JSON.stringify(aiClassDistributionJson)) : null,
+      imagesJson ? (typeof imagesJson === "string" ? imagesJson : JSON.stringify(imagesJson)) : "[]",
+      seedOrigin || null
     );
 
     // Increment seller totalBatchesCount
     db.prepare("UPDATE sellers SET totalBatchesCount = totalBatchesCount + 1 WHERE address = ?").run(sellerAddress);
-    syncSellerScore(sellerAddress, "BATCH_REGISTERED");
+    
+    const reason = aiVisualQualityScore != null
+      ? `New seed batch registered with AI visual quality assessment (Batch #${batchNumber}, Score: ${aiVisualQualityScore}/100)`
+      : `New seed batch registered (Batch #${batchNumber})`;
+    syncSellerScore(sellerAddress, "BATCH_REGISTERED", reason);
 
     const onChainTx = recordSessionTransaction(
       "SeedRegistry",
@@ -249,12 +308,22 @@ router.post("/seeds", (req: Request, res: Response) => {
       `Registered seed lot #${info.lastInsertRowid}: ${name} (${batchNumber}) [certHash: ${certHash.slice(0, 10)}...]`
     );
 
+    if (aiVisualQualityScore != null && aiReportCID) {
+      recordSessionTransaction(
+        "SeedRegistry",
+        "BatchQualityAssessed",
+        DEFAULT_ACCOUNTS.oracle,
+        `Oracle stamped AI Visual Seed Quality Score: ${aiVisualQualityScore}/100 for Lot #${info.lastInsertRowid} (${batchNumber}) [reportCID: ${aiReportCID}]`
+      );
+    }
+
     res.json({
       success: true,
       data: {
         id: info.lastInsertRowid,
         certificateHash: certHash,
         status: "Pending",
+        aiVisualQualityScore: aiVisualQualityScore != null ? Number(aiVisualQualityScore) : null,
         transactionHash: onChainTx.txHash
       }
     });
@@ -413,7 +482,8 @@ router.get("/orders", (req: Request, res: Response) => {
   const { buyer, seller } = req.query;
   let query = `
     SELECT o.*, s.name as seedName, s.cropType, s.batchNumber, s.certificateHash,
-           sel.name as sellerName
+           s.aiVisualQualityScore, s.aiQualityCategory, s.aiReportCID,
+           sel.name as sellerName, sel.trustScore as sellerTrustScore, sel.riskCategory as sellerRiskCategory
     FROM orders o
     JOIN seeds s ON o.batchId = s.id
     JOIN sellers sel ON o.sellerAddress = sel.address
@@ -755,69 +825,426 @@ router.get("/ml/score/:seller", (req: Request, res: Response) => {
   res.json({ success: true, data: scoreResult });
 });
 
-// POST /api/ml/recompute/:seller
-router.post("/ml/recompute/:seller", (req: Request, res: Response) => {
-  const seller = String(req.params.seller);
-  const result = syncSellerScore(seller, "MANUAL_ORACLE_REFRESH");
+// Helper to execute ViT model inference via FastAPI or Python CLI
+async function runViTInference(
+  batchId: string,
+  cropType: string,
+  variety: string,
+  sellerAddress: string,
+  filePaths: string[]
+): Promise<any> {
+  // 1. Try FastAPI ML service if running
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 1200);
+    const healthRes = await fetch("http://127.0.0.1:8000/api/ml/seed/health", { signal: controller.signal });
+    clearTimeout(timeout);
+    if (healthRes.ok) {
+      // Create FormData payload
+      const form = new (globalThis as any).FormData();
+      form.append("batchId", batchId);
+      form.append("cropType", cropType);
+      form.append("variety", variety || "Soybean");
+      form.append("sellerAddress", sellerAddress || "0x0");
+      for (const fp of filePaths) {
+        const fileBuffer = fs.readFileSync(fp);
+        const blob = new Blob([fileBuffer], { type: "image/jpeg" });
+        form.append("images", blob, path.basename(fp));
+      }
+      const analyzeRes = await fetch("http://127.0.0.1:8000/api/ml/seed/analyze", {
+        method: "POST",
+        body: form
+      });
+      return await analyzeRes.json();
+    }
+  } catch {}
+
+  // 2. Direct Python CLI execution fallback
+  const possiblePaths = [
+    path.resolve(process.cwd(), "ml_service", "inference_cli.py"),
+    path.resolve(process.cwd(), "..", "ml_service", "inference_cli.py")
+  ];
+  const scriptPath = possiblePaths.find(p => fs.existsSync(p)) || possiblePaths[0];
+
+  const args = [
+    scriptPath,
+    "--batch-id", String(batchId),
+    "--crop-type", cropType,
+    "--variety", variety || "Soybean",
+    "--seller-address", sellerAddress || "0x0",
+    "--images", ...filePaths
+  ];
+
+  try {
+    const { stdout } = await execFileAsync("python", args, { maxBuffer: 10 * 1024 * 1024 });
+    const trimmed = stdout.trim();
+    const jsonMatch = trimmed.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("Invalid output from ML inference engine.");
+    }
+    return JSON.parse(jsonMatch[0]);
+  } catch (err: any) {
+    if (err.stdout) {
+      const match = err.stdout.trim().match(/\{[\s\S]*\}/);
+      if (match) {
+        return JSON.parse(match[0]);
+      }
+    }
+    throw err;
+  }
+}
+
+// ==========================================
+// 6. AI SEED QUALITY ASSESSMENT (ViT-B/16) ENDPOINTS
+// ==========================================
+
+// POST /api/ml/seed/analyze
+router.post("/ml/seed/analyze", upload.array("images", 25), async (req: Request, res: Response) => {
+  const { batchId, cropType, variety, sellerAddress } = req.body;
+  const files = req.files as Express.Multer.File[];
+
+  // 1. Crop type validation (§4: ViT assessment only enabled for soybean seeds)
+  const normalizedCrop = String(cropType || "").trim().toLowerCase();
+  if (!normalizedCrop.includes("soybean")) {
+    // Clean up temporary uploads
+    if (files) {
+      files.forEach(f => { try { fs.unlinkSync(f.path); } catch {} });
+    }
+    return res.status(400).json({
+      success: false,
+      code: "UNSUPPORTED_CROP",
+      error: "AI visual assessment is currently available only for soybean seeds."
+    });
+  }
+
+  // 2. File volume validation
+  if (!files || files.length === 0) {
+    return res.status(400).json({
+      success: false,
+      code: "NO_IMAGES",
+      error: "At least one seed photograph is required for AI visual quality assessment."
+    });
+  }
+
+  const filePaths = files.map(f => f.path);
+
+  try {
+    const mlResult = await runViTInference(
+      batchId || `BATCH-${Date.now()}`,
+      cropType,
+      variety || "Soybean",
+      sellerAddress || DEFAULT_ACCOUNTS.seller1,
+      filePaths
+    );
+
+    // If checkpoint is missing, return graceful status without faking predictions
+    if (!mlResult.success && mlResult.code === "CHECKPOINT_REQUIRED") {
+      return res.status(503).json(mlResult);
+    }
+
+    if (!mlResult.success) {
+      return res.status(422).json(mlResult);
+    }
+
+    const report = mlResult.data;
+
+    // 3. Store quality report in seed_quality_reports table
+    const insertReport = db.prepare(`
+      INSERT INTO seed_quality_reports (
+        batchId, batchNumber, sellerAddress, cropType, variety,
+        visualQualityScore, qualityCategory, totalImages, distributionJson,
+        predictionsJson, reportCID, reportHash, modelVersion, disclaimer, createdAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const reportRow = insertReport.run(
+      isNaN(Number(batchId)) ? null : Number(batchId),
+      String(batchId),
+      sellerAddress || DEFAULT_ACCOUNTS.seller1,
+      report.cropType,
+      report.variety,
+      report.visualQualityScore,
+      report.qualityCategory,
+      report.totalImagesAnalyzed,
+      JSON.stringify(report.classDistribution),
+      JSON.stringify(report.predictions),
+      report.reportCID,
+      report.reportHash,
+      report.modelVersion,
+      report.disclaimer,
+      report.assessedAt
+    );
+
+    // 4. If batch already exists in seeds table, update it
+    const existingSeed = db.prepare("SELECT * FROM seeds WHERE id = ? OR batchNumber = ?").get(batchId, batchId) as any;
+    if (existingSeed) {
+      const storedImageRefs = files.map(f => `/uploads/${path.basename(f.path)}`);
+      db.prepare(`
+        UPDATE seeds 
+        SET aiVisualQualityScore = ?,
+            aiQualityCategory = ?,
+            aiReportCID = ?,
+            aiReportHash = ?,
+            aiModelVersion = ?,
+            aiAnalyzedAt = ?,
+            aiClassDistributionJson = ?,
+            imagesJson = ?
+        WHERE id = ?
+      `).run(
+        report.visualQualityScore,
+        report.qualityCategory,
+        report.reportCID,
+        report.reportHash,
+        report.modelVersion,
+        report.assessedAt,
+        JSON.stringify(report.classDistribution),
+        JSON.stringify(storedImageRefs),
+        existingSeed.id
+      );
+
+      // 5. Automatically recalculate dynamic Seller Trust Score (§7)
+      const auditReason = `New batch quality assessment (Batch #${existingSeed.batchNumber}, Score: ${report.visualQualityScore}/100)`;
+      syncSellerScore(existingSeed.sellerAddress, "AI_QUALITY_ASSESSMENT", auditReason);
+
+      recordSessionTransaction(
+        "SeedRegistry",
+        "BatchQualityAssessed",
+        DEFAULT_ACCOUNTS.oracle,
+        `Oracle stamped AI Visual Seed Quality Score: ${report.visualQualityScore}/100 (${report.qualityCategory}) for Batch #${existingSeed.batchNumber} [reportCID: ${report.reportCID}]`
+      );
+    } else if (sellerAddress) {
+      // Update seller trust score for new assessment
+      const auditReason = `New batch visual quality assessment completed (Score: ${report.visualQualityScore}/100)`;
+      syncSellerScore(sellerAddress, "AI_QUALITY_ASSESSMENT", auditReason);
+    }
+
+    res.json({
+      success: true,
+      data: {
+        ...report,
+        reportId: reportRow.lastInsertRowid
+      }
+    });
+  } catch (err: any) {
+    res.status(500).json({
+      success: false,
+      code: "INFERENCE_FAILURE",
+      error: "Error processing seed photographs: " + err.message
+    });
+  }
+});
+
+// GET /api/ml/seed/result/:batchId
+router.get("/ml/seed/result/:batchId", (req: Request, res: Response) => {
+  const param = req.params.batchId;
+  const report = db.prepare(`
+    SELECT * FROM seed_quality_reports 
+    WHERE batchNumber = ? OR batchId = ?
+    ORDER BY id DESC LIMIT 1
+  `).get(param, isNaN(Number(param)) ? -1 : Number(param)) as any;
+
+  if (!report) {
+    return res.status(404).json({
+      success: false,
+      error: `No AI quality report found for batch '${param}'.`
+    });
+  }
+
+  res.json({
+    success: true,
+    data: {
+      ...report,
+      classDistribution: JSON.parse(report.distributionJson || "{}"),
+      predictions: JSON.parse(report.predictionsJson || "[]")
+    }
+  });
+});
+
+// GET /api/ml/seed/health
+router.get("/ml/seed/health", async (_req: Request, res: Response) => {
+  try {
+    // Check if FastAPI service is up
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 1000);
+    const healthRes = await fetch("http://127.0.0.1:8000/api/ml/seed/health", { signal: controller.signal });
+    clearTimeout(timeout);
+    if (healthRes.ok) {
+      const data = await healthRes.json();
+      return res.json({ success: true, mode: "fastapi_daemon", ...data });
+    }
+  } catch {}
+
+  // Check via Python directly
+  try {
+    const { stdout } = await execFileAsync("python", [
+      "-c",
+      "from ml_service.model import get_classifier; import json; print(json.dumps(get_classifier().get_status()))"
+    ]);
+    const parsed = JSON.parse(stdout.trim());
+    return res.json({ success: true, mode: "python_embedded", ...parsed });
+  } catch (err: any) {
+    return res.json({
+      success: false,
+      mode: "offline",
+      checkpoint_available: false,
+      error: "ML service environment not reachable: " + err.message
+    });
+  }
+});
+
+// ==========================================
+// 7. DYNAMIC SELLER TRUST SCORE ENGINE ENDPOINTS (§6 & §12)
+// ==========================================
+
+// POST /api/trust/recalculate/:sellerId
+router.post("/trust/recalculate/:sellerId", (req: Request, res: Response) => {
+  const seller = String(req.params.sellerId);
+  const reason = req.body?.reason || "Dynamic score recalculated on demand";
+  const result = syncSellerScore(seller, "MANUAL_RECALCULATION", reason);
   if (!result) return res.status(404).json({ success: false, error: "Seller not found" });
   res.json({ success: true, data: result });
 });
 
-// GET /api/ml/verify/:seller/:updateId (Paper Auditability Requirement)
-router.get("/ml/verify/:seller/:updateId", (req: Request, res: Response) => {
+// GET /api/trust/:sellerId
+router.get("/trust/:sellerId", (req: Request, res: Response) => {
+  const seller = db.prepare("SELECT * FROM sellers WHERE address = ?").get(req.params.sellerId) as any;
+  if (!seller) return res.status(404).json({ success: false, error: "Seller not found" });
+
+  const avgQualityRow = db.prepare(`
+    SELECT AVG(aiVisualQualityScore) as avgQuality, COUNT(*) as count 
+    FROM seeds 
+    WHERE sellerAddress = ? AND aiVisualQualityScore IS NOT NULL AND aiVisualQualityScore > 0
+  `).get(seller.address) as { avgQuality: number | null; count: number };
+
+  const avgAiQuality = avgQualityRow?.avgQuality != null 
+    ? parseFloat(avgQualityRow.avgQuality.toFixed(2)) 
+    : (seller.avgAiQualityScore || 75.0);
+
+  const features: SellerFeatures = {
+    sellerAddress: seller.address,
+    totalOrders: seller.totalOrders,
+    successfulOrders: seller.successfulOrders,
+    failedOrders: seller.failedOrders,
+    deliveredOrders: seller.deliveredOrders,
+    delayedOrders: seller.delayedOrders,
+    disputedOrders: seller.disputedOrders,
+    disputesLost: seller.disputesLost,
+    certifiedBatchesCount: seller.certifiedBatchesCount,
+    totalBatchesCount: seller.totalBatchesCount,
+    avgFarmerRating: seller.avgFarmerRating,
+    ratingCount: seller.ratingCount,
+    accountAgeDays: Math.max(1, Math.round((Date.now() - new Date(seller.registeredAt).getTime()) / (1000 * 3600 * 24))),
+    daysSinceLastActivity: 1,
+    avgAiQualityScore: avgAiQuality,
+    aiAssessedBatchesCount: avgQualityRow?.count || 0,
+    isCaVerified: seller.isVerified
+  };
+
+  const scoreResult = calculateTrustScore(features);
+  res.json({ success: true, data: scoreResult });
+});
+
+// GET /api/trust/:sellerId/history
+router.get("/trust/:sellerId/history", (req: Request, res: Response) => {
   const history = db.prepare(`
-    SELECT * FROM trust_score_history 
-    WHERE sellerAddress = ? AND id = ?
-  `).get(req.params.seller, req.params.updateId) as any;
+    SELECT id, sellerAddress, previousScore, score, riskCategory, modelVersion, 
+           featuresHash, triggerEvent, reason, createdAt 
+    FROM trust_score_history 
+    WHERE sellerAddress = ?
+    ORDER BY id DESC
+  `).all(req.params.sellerId);
 
-  if (!history) return res.status(404).json({ success: false, error: "Score update record not found" });
+  res.json({ success: true, count: history.length, data: history });
+});
 
-  const rawFeatures = JSON.parse(history.featuresJson);
-  const recomputed = calculateTrustScore(rawFeatures);
-  const hashMatches = recomputed.featuresHash.toLowerCase() === history.featuresHash.toLowerCase();
+// GET /api/trust/:sellerId/breakdown
+router.get("/trust/:sellerId/breakdown", (req: Request, res: Response) => {
+  const seller = db.prepare("SELECT * FROM sellers WHERE address = ?").get(req.params.sellerId) as any;
+  if (!seller) return res.status(404).json({ success: false, error: "Seller not found" });
+
+  const avgQualityRow = db.prepare(`
+    SELECT AVG(aiVisualQualityScore) as avgQuality, COUNT(*) as count 
+    FROM seeds 
+    WHERE sellerAddress = ? AND aiVisualQualityScore IS NOT NULL AND aiVisualQualityScore > 0
+  `).get(seller.address) as { avgQuality: number | null; count: number };
+
+  const avgAiQuality = avgQualityRow?.avgQuality != null 
+    ? parseFloat(avgQualityRow.avgQuality.toFixed(2)) 
+    : (seller.avgAiQualityScore || 75.0);
+
+  const features: SellerFeatures = {
+    sellerAddress: seller.address,
+    totalOrders: seller.totalOrders,
+    successfulOrders: seller.successfulOrders,
+    failedOrders: seller.failedOrders,
+    deliveredOrders: seller.deliveredOrders,
+    delayedOrders: seller.delayedOrders,
+    disputedOrders: seller.disputedOrders,
+    disputesLost: seller.disputesLost,
+    certifiedBatchesCount: seller.certifiedBatchesCount,
+    totalBatchesCount: seller.totalBatchesCount,
+    avgFarmerRating: seller.avgFarmerRating,
+    ratingCount: seller.ratingCount,
+    accountAgeDays: Math.max(1, Math.round((Date.now() - new Date(seller.registeredAt).getTime()) / (1000 * 3600 * 24))),
+    daysSinceLastActivity: 1,
+    avgAiQualityScore: avgAiQuality,
+    aiAssessedBatchesCount: avgQualityRow?.count || 0,
+    isCaVerified: seller.isVerified
+  };
+
+  const scoreResult = calculateTrustScore(features);
 
   res.json({
     success: true,
     data: {
-      updateId: history.id,
-      sellerAddress: history.sellerAddress,
-      recordedScore: history.score,
-      recordedFeaturesHash: history.featuresHash,
-      recomputedFeaturesHash: recomputed.featuresHash,
-      auditMatch: hashMatches,
-      status: hashMatches ? "AUDIT_VERIFIED" : "HASH_MISMATCH",
-      modelVersion: history.modelVersion,
-      recordedAt: history.createdAt
+      trustScore: scoreResult.trustScore,
+      trustCategory: scoreResult.trustCategory,
+      confidenceLevel: scoreResult.confidenceLevel,
+      dataCoveragePercent: scoreResult.dataCoveragePercent,
+      isNewSeller: scoreResult.isNewSeller,
+      recommendations: scoreResult.recommendations,
+      breakdown: scoreResult.breakdown,
+      rawFeatures: scoreResult.rawFeatures,
+      modelVersion: scoreResult.modelVersion,
+      featuresHash: scoreResult.featuresHash,
+      computedAt: scoreResult.computedAt
     }
   });
 });
 
-// GET /api/ml/model-info
-router.get("/ml/model-info", (_req: Request, res: Response) => {
-  res.json({
-    success: true,
-    data: {
-      modelName: "SeedSure Dynamic Multi-Factor Trust Model",
-      version: "SeedSure-ML-v1.4",
-      evaluationStatus: "IEEE Benchmark Validated",
-      weights: {
-        certificationRatio: "25%",
-        onTimeDeliveryRate: "25%",
-        transactionSuccessRate: "20%",
-        farmerCommunityRating: "15%",
-        disputeComplaintRate: "15%"
-      },
-      halfLifeDecayDays: 90,
-      riskThresholds: {
-        excellent: "90 - 100",
-        trusted: "75 - 89",
-        moderate: "60 - 74",
-        low: "40 - 59",
-        highRisk: "0 - 39"
-      },
-      minSalesThreshold: 40
-    }
-  });
+// GET /api/ml/score/:seller (Backwards compatibility)
+router.get("/ml/score/:seller", (req: Request, res: Response) => {
+  const seller = db.prepare("SELECT * FROM sellers WHERE address = ?").get(req.params.seller) as any;
+  if (!seller) return res.status(404).json({ success: false, error: "Seller not found" });
+
+  const avgQualityRow = db.prepare(`
+    SELECT AVG(aiVisualQualityScore) as avgQuality, COUNT(*) as count 
+    FROM seeds 
+    WHERE sellerAddress = ? AND aiVisualQualityScore IS NOT NULL AND aiVisualQualityScore > 0
+  `).get(seller.address) as { avgQuality: number | null; count: number };
+
+  const features: SellerFeatures = {
+    sellerAddress: seller.address,
+    totalOrders: seller.totalOrders,
+    successfulOrders: seller.successfulOrders,
+    failedOrders: seller.failedOrders,
+    deliveredOrders: seller.deliveredOrders,
+    delayedOrders: seller.delayedOrders,
+    disputedOrders: seller.disputedOrders,
+    disputesLost: seller.disputesLost,
+    certifiedBatchesCount: seller.certifiedBatchesCount,
+    totalBatchesCount: seller.totalBatchesCount,
+    avgFarmerRating: seller.avgFarmerRating,
+    ratingCount: seller.ratingCount,
+    accountAgeDays: 120,
+    daysSinceLastActivity: 1,
+    avgAiQualityScore: avgQualityRow?.avgQuality != null ? avgQualityRow.avgQuality : (seller.avgAiQualityScore || 75),
+    aiAssessedBatchesCount: avgQualityRow?.count || 0,
+    isCaVerified: seller.isVerified
+  };
+
+  const scoreResult = calculateTrustScore(features);
+  res.json({ success: true, data: scoreResult });
 });
 
 // ==========================================

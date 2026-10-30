@@ -57,9 +57,31 @@ function registerBatch(
 function certifyBatch(uint256 batchId) external; // CERTIFIER_ROLE
 function revokeBatch(uint256 batchId, string calldata reason) external;
 
+// AI Visual Seed Quality Assessment Oracle Record
+function recordBatchQualityAssessment(
+    uint256 _batchId,
+    uint256 _visualQualityScore,
+    string calldata _qualityCategory,
+    string calldata _reportCID,
+    bytes32 _reportHash,
+    string calldata _modelVersion
+) external; // ORACLE_ROLE
+
+function getBatchQualityAssessment(uint256 _batchId) external view returns (
+    uint256 batchId,
+    uint256 visualQualityScore,
+    string memory qualityCategory,
+    string memory reportCID,
+    bytes32 reportHash,
+    string memory modelVersion,
+    uint256 timestamp,
+    address assessedBy
+);
+
 event BatchRegistered(uint256 indexed batchId, address indexed seller, string batchNumber, bytes32 certificateHash);
 event BatchCertified(uint256 indexed batchId, address indexed certifier);
 event BatchRevoked(uint256 indexed batchId, address indexed certifier, string reason);
+event BatchQualityAssessed(uint256 indexed batchId, uint256 visualQualityScore, string qualityCategory, string reportCID, bytes32 reportHash, string modelVersion);
 ```
 
 ### C. TrustScoreRegistry
@@ -72,7 +94,26 @@ function updateTrustScore(
     bytes32 featuresHash // keccak256 or sha256 of canonical feature vector
 ) external; // ORACLE_ROLE
 
+// Auditable Multi-Parameter Dynamic Update with Reason
+function updateTrustScoreWithReason(
+    address _seller,
+    uint256 _score,
+    bytes32 _featuresHash,
+    string calldata _reason
+) external; // ORACLE_ROLE
+
+function getTrustScoreHistoryCount(address _seller) external view returns (uint256);
+function getTrustScoreHistoryItem(address _seller, uint256 _index) external view returns (
+    uint256 previousScore,
+    uint256 newScore,
+    bytes32 featuresHash,
+    string memory reason,
+    uint256 timestamp,
+    address updatedBy
+);
+
 event TrustScoreUpdated(address indexed seller, uint8 score, string riskCategory, string modelVersion, bytes32 featuresHash);
+event TrustScoreUpdatedWithReason(address indexed seller, uint256 previousScore, uint256 newScore, bytes32 featuresHash, string reason, uint256 timestamp);
 ```
 
 ### D. Marketplace & Escrow

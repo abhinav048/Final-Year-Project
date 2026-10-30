@@ -121,6 +121,72 @@ describe("SeedSure Smart Contract Ecosystem", function () {
       const [, isCertifiedNow] = await seedRegistry.verifyBatch(1, sampleCertHash);
       expect(isCertifiedNow).to.be.true;
     });
+
+    it("should record AI visual seed quality assessment on-chain and prevent unauthorized updates", async function () {
+      const pricePerKg = ethers.parseEther("0.001");
+      await seedRegistry.connect(seller1).registerBatch(
+        "Soybean JS-335",
+        "Oilseeds",
+        "JS-335 Breeder Seed",
+        "SOY-2026-101",
+        "JNKVV Indore",
+        920,
+        990,
+        910,
+        100,
+        "Yellow Mosaic Tolerant",
+        Math.floor(Date.now() / 1000) + 31536000,
+        pricePerKg,
+        500,
+        "metaCID_soy",
+        "certCID_soy",
+        sampleCertHash
+      );
+
+      const reportHash = ethers.keccak256(ethers.toUtf8Bytes("AI-QUALITY-REPORT-BATCH-1"));
+      
+      // Authorized oracle updates AI quality record
+      await seedRegistry.connect(admin).recordBatchQualityAssessment(
+        1,
+        88,
+        "Good",
+        "bafybeiai_report_cid",
+        reportHash,
+        "SeedSure-ViT-B16-v1.0"
+      );
+
+      const assessment = await seedRegistry.getBatchQualityAssessment(1);
+      expect(assessment.visualQualityScore).to.equal(88);
+      expect(assessment.qualityCategory).to.equal("Good");
+      expect(assessment.reportCID).to.equal("bafybeiai_report_cid");
+      expect(assessment.reportHash).to.equal(reportHash);
+      expect(assessment.modelVersion).to.equal("SeedSure-ViT-B16-v1.0");
+      expect(assessment.isAssessed).to.be.true;
+
+      // Unauthorized user rejected
+      await expect(
+        seedRegistry.connect(farmer1).recordBatchQualityAssessment(
+          1,
+          95,
+          "Excellent",
+          "bafybeifake",
+          reportHash,
+          "SeedSure-ViT-B16-v1.0"
+        )
+      ).to.be.reverted;
+
+      // Score > 100 rejected
+      await expect(
+        seedRegistry.connect(admin).recordBatchQualityAssessment(
+          1,
+          105,
+          "Invalid",
+          "bafybeifake",
+          reportHash,
+          "SeedSure-ViT-B16-v1.0"
+        )
+      ).to.be.revertedWith("Score must be <= 100");
+    });
   });
 
   describe("3. ML Trust Score Registry & Gating", function () {
@@ -149,6 +215,63 @@ describe("SeedSure Smart Contract Ecosystem", function () {
         featuresHash
       );
       expect(await trustScoreRegistry.meetsTrustThreshold(seller2.address, 40)).to.be.false;
+    });
+
+    it("should record dynamic trust score update with auditable reason and fetch history records", async function () {
+      await trustScoreRegistry.connect(oracle).updateTrustScoreWithReason(
+        seller1.address,
+        79,
+        "Trusted",
+        "SeedSure-ML-v1.4",
+        featuresHash,
+        "New batch quality assessment"
+      );
+
+      await trustScoreRegistry.connect(oracle).updateTrustScoreWithReason(
+        seller1.address,
+        84,
+        "Trusted",
+        "SeedSure-ML-v1.4",
+        featuresHash,
+        "Successful delivery and positive verified feedback"
+      );
+
+      const count = await trustScoreRegistry.getTrustScoreHistoryCount(seller1.address);
+      expect(count).to.equal(2);
+
+      const item0 = await trustScoreRegistry.getTrustScoreHistoryItem(seller1.address, 0);
+      expect(item0.previousScore).to.equal(50);
+      expect(item0.newScore).to.equal(79);
+      expect(item0.reason).to.equal("New batch quality assessment");
+
+      const item1 = await trustScoreRegistry.getTrustScoreHistoryItem(seller1.address, 1);
+      expect(item1.previousScore).to.equal(79);
+      expect(item1.newScore).to.equal(84);
+      expect(item1.reason).to.equal("Successful delivery and positive verified feedback");
+
+      // Score > 100 rejected
+      await expect(
+        trustScoreRegistry.connect(oracle).updateTrustScoreWithReason(
+          seller1.address,
+          101,
+          "Invalid",
+          "SeedSure-ML-v1.4",
+          featuresHash,
+          "Invalid test"
+        )
+      ).to.be.revertedWith("Score must be <= 100");
+
+      // Unauthorized rejected
+      await expect(
+        trustScoreRegistry.connect(farmer1).updateTrustScoreWithReason(
+          seller1.address,
+          95,
+          "Excellent",
+          "SeedSure-ML-v1.4",
+          featuresHash,
+          "Unauthorized hack"
+        )
+      ).to.be.reverted;
     });
   });
 

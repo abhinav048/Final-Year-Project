@@ -39,14 +39,21 @@ export const CONTRACT_ABIS = {
     "function revokeBatch(uint256 batchId, string reason) external",
     "function verifyBatch(uint256 batchId, bytes32 testHash) external view returns (bool isValid, bool isCertified)",
     "function getBatch(uint256 batchId) external view returns (tuple(uint256 batchId, address seller, string name, string cropType, string variety, string batchNumber, uint16 germinationRate, uint16 purity, uint16 vigor, uint16 moisture, uint256 pricePerKg, uint256 availableQuantity, uint8 status, bytes32 certificateHash, string certificateCID))",
+    "function recordBatchQualityAssessment(uint256 batchId, uint8 visualQualityScore, string qualityCategory, string reportCID, bytes32 reportHash, string modelVersion) external",
+    "function getBatchQualityAssessment(uint256 batchId) external view returns (uint8 visualQualityScore, string qualityCategory, string reportCID, bytes32 reportHash, string modelVersion, uint256 assessedAt, bool isAssessed)",
     "event BatchRegistered(uint256 indexed batchId, address indexed seller, string batchNumber, bytes32 certificateHash)",
     "event BatchCertified(uint256 indexed batchId, address indexed certifier)",
-    "event BatchRevoked(uint256 indexed batchId, address indexed certifier, string reason)"
+    "event BatchRevoked(uint256 indexed batchId, address indexed certifier, string reason)",
+    "event BatchQualityAssessed(uint256 indexed batchId, uint8 visualQualityScore, string qualityCategory, string reportCID, bytes32 reportHash, string modelVersion, uint256 assessedAt)"
   ],
   TrustScoreRegistry: [
     "function updateTrustScore(address seller, uint8 score, string riskCategory, string modelVersion, bytes32 featuresHash) external",
+    "function updateTrustScoreWithReason(address seller, uint8 score, string riskCategory, string modelVersion, bytes32 featuresHash, string reason) external",
     "function getTrustScore(address seller) external view returns (uint8 score, string riskCategory, uint256 updatedAt, string modelVersion, bytes32 featuresHash)",
-    "event TrustScoreUpdated(address indexed seller, uint8 score, string riskCategory, string modelVersion, bytes32 featuresHash)"
+    "function getTrustScoreHistoryCount(address seller) external view returns (uint256)",
+    "function getTrustScoreHistoryItem(address seller, uint256 index) external view returns (uint8 previousScore, uint8 newScore, string riskCategory, string modelVersion, bytes32 featuresHash, string reason, uint256 timestamp)",
+    "event TrustScoreUpdated(address indexed seller, uint8 score, string riskCategory, string modelVersion, bytes32 featuresHash)",
+    "event TrustScoreUpdatedWithReason(address indexed seller, uint8 previousScore, uint8 newScore, string riskCategory, string modelVersion, bytes32 featuresHash, string reason, uint256 timestamp)"
   ],
   Marketplace: [
     "function createOrder(uint256 batchId, uint256 quantity) external payable returns (uint256 orderId)",

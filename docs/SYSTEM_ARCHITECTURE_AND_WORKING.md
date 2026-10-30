@@ -17,16 +17,17 @@ In global agricultural supply chains—particularly in developing and agrarian e
 * **Farmer Asymmetry & Financial Ruin:** When a farmer purchases unviable seeds, failure is not discovered until 30 to 60 days later when seeds fail to germinate. By then, the capital is lost, planting windows have expired, and recourse is virtually impossible.
 
 ### 1.2 The SeedSure Solution
-**SeedSure** bridges this critical gap before and during purchase by integrating three immutable pillars:
-1. **Cryptographic Proof of Quality:** High-resolution seed testing laboratory parameters (germination rate, vigor, purity, moisture, disease resistance genes) are bound to a tamper-proof **SHA-256 digital fingerprint** anchored directly onto the Ethereum blockchain, verified by accredited Certification Authorities (CAs).
-2. **Dynamic ML-Driven Seller Trust Scoring:** An automated multi-factor machine learning evaluation engine computes dynamic credibility ratings based on actual historical fulfillment, lab certification ratios, Bayesian-adjusted reviews, and dispute rates—anchored on-chain via a cryptographic `featuresHash` to eliminate oracle manipulation.
-3. **Non-Custodial Smart Contract Escrow with Automated Gating:** Buyer payments are locked directly within decentralized Ethereum smart contracts during transit. Funds are only unlocked to the seller when the farmer confirms physical delivery and viability. A built-in **Farmer Safety Gate** programmatically halts checkout if a seller's trust score falls below a verified threshold ($< 40/100$).
+**SeedSure** bridges this critical gap before and during purchase by integrating four interconnected pillars:
+1. **AI-Based Visual Seed Quality Assessment:** A Vision Transformer (`ViT-B/16`, 224×224 RGB) classifies optical seed defect distribution across five categories (`Intact`, `Broken`, `Immature`, `Skin-damaged`, `Spotted`) for soybean seed lots, anchored on-chain with IPFS CID and SHA-256 integrity hash.
+2. **Cryptographic Proof of Laboratory Quality:** High-resolution seed testing parameters (germination rate, vigor, purity, moisture, disease resistance genes) are bound to a tamper-proof **SHA-256 digital fingerprint** anchored directly onto the Ethereum blockchain, verified by accredited Certification Authorities (CAs).
+3. **Dynamic ML-Driven Seller Trust Scoring:** An automated 6-factor dynamic evaluation engine computes dynamic credibility ratings based on actual historical AI visual quality, lab certification ratios, successful deliveries, transaction completion, Bayesian-adjusted reviews, and dispute rates—anchored on-chain via a cryptographic `featuresHash` with an auditable reason log.
+4. **Non-Custodial Smart Contract Escrow with Automated Gating:** Buyer payments are locked directly within decentralized Ethereum smart contracts during transit. Funds are only unlocked to the seller when the farmer confirms physical delivery and viability. A built-in **Farmer Safety Gate** programmatically halts checkout if a seller's trust score falls below a verified threshold ($< 40/100$).
 
 ---
 
 ## 2. Complete System Architecture & Topology
 
-SeedSure employs a **decoupled hybrid Web3 architecture** that combines the decentralized security, trustlessness, and immutability of public/consortium blockchains with the millisecond responsiveness, complex querying, and indexing capabilities of modern relational database caching.
+SeedSure employs a **decoupled hybrid Web3 & AI architecture** combining decentralized smart contracts, high-throughput Python machine learning inference, Node.js REST API orchestration, SQLite database caching, and content-addressed IPFS storage:
 
 ```
 +---------------------------------------------------------------------------------------------------------+
@@ -34,8 +35,8 @@ SeedSure employs a **decoupled hybrid Web3 architecture** that combines the dece
 |  +--------------------+  +--------------------+  +--------------------+  +---------------------------+  |
 |  | Certified Market   |  | Seed Detail Page   |  | Cryptographic      |  | Role Dashboards           |  |
 |  | - Realtime Filters |  | - Quality Gauges   |  | Tamper Testbench   |  | - Farmer / Escrow Portal  |  |
-|  | - Trust Gate Slider|  | - Lab Spec Sheet   |  | - SHA-256 Verifier |  | - Breeder / Seller Hub    |  |
-|  | - Search & Sort    |  | - Bag QR Generator |  | - Forgery Simulator|  | - CA Certifier Console    |  |
+|  | - AI Quality Badge |  | - ViT Quality Card |  | - SHA-256 Verifier |  | - Breeder Hub & ViT Upload|  |
+|  | - Trust Gate Slider|  | - Full Report Modal|  | - Forgery Simulator|  | - Trust Audit & History   |  |
 |  +--------------------+  +--------------------+  +--------------------+  +---------------------------+  |
 |                 |                         |                                             |               |
 |                 | REST API / JSON         | Re-Hash Document Bytes                      | Web3 Ethers   |
@@ -43,7 +44,7 @@ SeedSure employs a **decoupled hybrid Web3 architecture** that combines the dece
 +---------------------------------------------------------------------------------------------------------+
 |                                    BACKEND & CACHING TIER (Node.js/Express)                             |
 |  +---------------------------------------------------------------------------------------------------+  |
-|  | RESTful Service Endpoints (/api/seeds, /api/sellers, /api/orders, /api/feedback, /api/ml)         |  |
+|  | RESTful Service Endpoints (/api/seeds, /api/sellers, /api/orders, /api/feedback, /api/ml, /api/trust)|
 |  +---------------------------------------------------------------------------------------------------+  |
 |  | Multer File Storage & SHA-256 Hashing Engine                                                      |  |
 |  +---------------------------------------------------------------------------------------------------+  |
@@ -51,16 +52,27 @@ SeedSure employs a **decoupled hybrid Web3 architecture** that combines the dece
 |  +---------------------------------------------------------------------------------------------------+  |
 |  | Blockchain Dual-Mode Service Adapter (Live Hardhat RPC / Anvil JSON-RPC <-> Simulated Ledger)    |  |
 |  +---------------------------------------------------------------------------------------------------+  |
-|                                                     |                                                   |
-|                                                     | Triggers Recomputation                            |
-|                                                     v                                                   |
+|        | (Dual Invocation: HTTP REST or Subprocess CLI Fallback)                                         |
+|        v                                                                                                |
 |  +---------------------------------------------------------------------------------------------------+  |
-|  |                        OFF-CHAIN ML DYNAMIC TRUST ORACLE ENGINE                                   |  |
-|  |  - 5-Factor Mathematical Formulation (Certification, Delivery, Success, Bayesian Rating, Dispute)  |  |
-|  |  - Exponential Recency Decay Model (Half-Life Lambda = 90 Days)                                   |  |
-|  |  - Canonical JSON Feature Serializer & SHA-256 featuresHash Commitment Generator                   |  |
+|  |                           PYTHON ML INFERENCE SERVICE (/ml_service)                               |  |
+|  |  - Vision Transformer (ViT-B/16, 224x224 RGB, ImageNet Normalization)                             |  |
+|  |  - 5-Class Categorization: Intact, Broken, Immature, Skin-damaged, Spotted                         |  |
+|  |  - Weighted Prototype Visual Quality Score Calculation (0 - 100)                                   |  |
+|  |  - Strict Soybean Crop Guard (Unsupported crop prevention)                                        |  |
+|  |  - Model Checkpoint: ml_service/models/best_vit.pth (Trained research weights)                   |  |
 |  +---------------------------------------------------------------------------------------------------+  |
-|                                                     | Writes Score + featuresHash                       |
+|        |                                                                                                |
+|        | Generates Batch Quality Report & Triggers Trust Sync                                           |
+|        v                                                                                                |
+|  +---------------------------------------------------------------------------------------------------+  |
+|  |                        DYNAMIC SELLER TRUST SCORE ENGINE (6 Factors)                              |  |
+|  |  - Historical AI Seed Quality (25%)  |  Certification Verification (20%)                         |  |
+|  |  - Successful Delivery Rate (20%)    |  Transaction Performance (15%)                            |  |
+|  |  - Farmer Feedback (10%)             |  Complaint & Dispute Health (10%)                          |  |
+|  |  - Auditable Reason Generation & Canonical JSON featuresHash SHA-256 Commitment                   |  |
+|  +---------------------------------------------------------------------------------------------------+  |
+|                                                     | Writes Score + featuresHash + Reason              |
 |                                                     v                                                   |
 +---------------------------------------------------------------------------------------------------------+
 |                                    BLOCKCHAIN & SMART CONTRACT TIER                                     |
@@ -70,10 +82,10 @@ SeedSure employs a **decoupled hybrid Web3 architecture** that combines the dece
 |  |  +----------------------+  +---------------------+  +------------------------------------------+  |  |
 |  |  |  SellerRegistry.sol  |  |   SeedRegistry.sol  |  |         TrustScoreRegistry.sol           |  |  |
 |  |  | - Breeder Profiles   |  | - Batch Catalog     |  | - Dynamic 0-100 Trust Ratings            |  |  |
-|  |  | - Certifier Vetting  |  | - Lab Quality Specs |  | - Immutable featuresHash Audit Vector    |  |  |
-|  |  | - Fulfillment Stats  |  | - SHA-256 Cert Hash |  | - Automated Safety Threshold Interface   |  |  |
-|  |  | - Suspension System  |  | - CA Certify/Revoke |  +------------------------------------------+  |  |
-|  |  +----------------------+  +---------------------+                       |                        |  |
+|  |  | - Certifier Vetting  |  | - Lab Quality Specs |  | - updateTrustScoreWithReason()           |  |  |
+|  |  | - Fulfillment Stats  |  | - AI Quality Record |  | - Auditable Update History Array         |  |  |
+|  |  | - Suspension System  |  | - recordBatchQuality|  | - Immutable featuresHash Audit Vector    |  |  |
+|  |  +----------------------+  +---------------------+  +------------------------------------------+  |  |
 |  |              |                        |                                  |                        |  |
 |  |              +------------------------+-------------+                    | Inter-Contract Query   |  |
 |  |                                                     v                    v                        |  |
@@ -96,7 +108,7 @@ SeedSure employs a **decoupled hybrid Web3 architecture** that combines the dece
 |                                                     v                                                   |
 |  +---------------------------------------------------------------------------------------------------+  |
 |  |                     DECENTRALIZED STORAGE TIER (IPFS / Content Addressable)                       |  |
-|  |  - Seed Certificate PDFs  |  Accreditation Documents  |  Dispute Photos  |  Carrier Waybills      |  |
+|  |  - Seed Photographs  |  AI Batch Quality Reports  |  Lab Certificates  |  Accreditation Papers    |  |
 |  +---------------------------------------------------------------------------------------------------+  |
 +---------------------------------------------------------------------------------------------------------+
 ```
@@ -190,6 +202,20 @@ SeedSure employs a **decoupled hybrid Web3 architecture** that combines the dece
     `require(!_registeredHashes[certificateHash], "Certificate hash already registered");`
   * **Certification Lifecycle:**
     $$\text{Pending (0)} \xrightarrow{\text{certifyBatch() by CERTIFIER}} \text{Certified (1)} \xrightarrow{\text{revokeBatch()}} \text{Revoked (2)}$$
+  * **AI Visual Seed Quality Assessment Oracle Record:**
+    ```solidity
+    struct AIQualityRecord {
+        uint256 batchId;
+        uint256 visualQualityScore; // 0 - 100
+        string qualityCategory;     // "Excellent" | "Good" | "Moderate" | "Poor" | "Very Poor"
+        string reportCID;           // IPFS CID to full JSON assessment report
+        bytes32 reportHash;         // SHA-256 integrity hash of report
+        string modelVersion;        // "SeedSure-ViT-B16-v1.0"
+        uint256 timestamp;
+        address assessedBy;
+    }
+    ```
+    Oracle nodes invoke `recordBatchQualityAssessment()` to anchor the ViT inference result directly to the batch on-chain.
   * **Inventory Deduction:** `deductQuantity(uint256 batchId, uint256 quantity)` can only be called by the `MARKETPLACE_ROLE` during valid escrow order creation.
   * **On-Chain Tamper Verification Testbench:** `verifyBatch(batchId, testHash)` returns `(bool isValid, bool isCertified)` by checking if `testHash == b.certificateHash`.
 
@@ -197,7 +223,7 @@ SeedSure employs a **decoupled hybrid Web3 architecture** that combines the dece
 
 #### Contract 3: `TrustScoreRegistry.sol`
 * **Purpose:** Decentralized oracle contract that records ML-computed seller trust ratings and anchors cryptographic audit vectors.
-* **Key State Struct:**
+* **Key State Structs:**
   ```solidity
   struct ScoreRecord {
       uint8 score;               // Trust rating bounded [0, 100]
@@ -206,7 +232,20 @@ SeedSure employs a **decoupled hybrid Web3 architecture** that combines the dece
       string modelVersion;       // Exact model algorithm (e.g. "SeedSure-ML-v1.4")
       bytes32 featuresHash;      // SHA-256 hash of canonical multi-factor vector
   }
+
+  struct TrustUpdateAudit {
+      uint256 previousScore;
+      uint256 newScore;
+      bytes32 featuresHash;
+      string reason;             // Human-readable trigger explanation
+      uint256 timestamp;
+      address updatedBy;
+  }
   ```
+
+* **Auditable Reason History:**
+  `updateTrustScoreWithReason(seller, score, featuresHash, reason)` records an immutable chronological history entry accessible through `getTrustScoreHistoryItem(seller, index)`. Every score change is auditable on-chain.
+
 * **Why `featuresHash` is a Breakthrough for Blockchain-ML Integration:**
   Most blockchain oracles act as "black boxes" that post arbitrary numbers. In SeedSure, the oracle is forced to publish `featuresHash = SHA256(canonicalJSON(features))`. Any auditor or researcher can recompute the hash from raw transaction history and verify that the ML model calculated the score fairly without bias or bribes.
 * **Threshold Gating Function:**
@@ -443,16 +482,42 @@ CREATE TABLE trust_score_history (
   triggerEvent TEXT NOT NULL,
   createdAt TEXT NOT NULL
 );
+
+-- 7. SEED QUALITY REPORTS TABLE: ViT inference results and 5-class distribution
+CREATE TABLE seed_quality_reports (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  batchId TEXT UNIQUE NOT NULL,
+  sellerAddress TEXT NOT NULL,
+  cropType TEXT NOT NULL,
+  variety TEXT,
+  visualQualityScore REAL NOT NULL,
+  qualityCategory TEXT NOT NULL,
+  totalImagesAnalyzed INTEGER NOT NULL,
+  classDistributionJson TEXT NOT NULL,
+  predictionsJson TEXT NOT NULL,
+  reportCID TEXT,
+  reportHash TEXT,
+  modelVersion TEXT NOT NULL,
+  assessedAt TEXT NOT NULL,
+  createdAt TEXT NOT NULL
+);
 ```
 
 ---
 
 ### 4.3 REST API Endpoints Catalog
 
-The backend exposes a comprehensive set of RESTful endpoints grouped into 7 functional domains:
+The backend exposes a comprehensive set of RESTful endpoints grouped into 8 functional domains:
 
 | Category | Method & Path | Description |
 | :--- | :--- | :--- |
+| **AI Seed Quality (ViT)** | `POST /api/ml/seed/analyze` | Ingests batch photos, runs ViT-B/16 inference, calculates score, and syncs trust. |
+| | `GET /api/ml/seed/result/:batchId` | Retrieves stored batch visual quality report and defect breakdown. |
+| | `GET /api/ml/seed/health` | Checks ML service and model checkpoint readiness. |
+| **Dynamic Seller Trust** | `POST /api/trust/recalculate/:sellerId` | Recomputes 6-factor trust score with auditable trigger reason. |
+| | `GET /api/trust/:sellerId` | Returns current trust score, trust category, coverage %, and confidence. |
+| | `GET /api/trust/:sellerId/history` | Chronological audit history of trust updates with reasons and block links. |
+| | `GET /api/trust/:sellerId/breakdown` | Parameter-wise breakdown and actionable improvement recommendations. |
 | **Seed Catalog** | `GET /api/seeds` | Query seeds with search filters (`q`, `category`, `minTrust`, `certifiedOnly`, `sort`). |
 | | `GET /api/seeds/:id` | Fetch full seed batch details including laboratory specifications. |
 | | `POST /api/seeds` | Register a newly harvested seed lot (computes `certificateHash`). |
@@ -472,10 +537,6 @@ The backend exposes a comprehensive set of RESTful endpoints grouped into 7 func
 | **Feedback** | `POST /api/feedback` | Verified buyer submits 1-5 star review for completed order. |
 | **Storage & Tamper** | `POST /api/ipfs/upload` | Multipart upload for certificates/evidence; returns CID and SHA-256. |
 | | `POST /api/ipfs/verify-tamper` | Recomputes SHA-256 of file and checks against recorded hash. |
-| **Dynamic ML Oracle** | `GET /api/ml/score/:seller` | Returns dynamic trust score, risk tier, and feature breakdown. |
-| | `POST /api/ml/recompute/:seller` | Triggers immediate score recalculation and on-chain oracle sync. |
-| | `GET /api/ml/verify/:seller/:updateId` | Audits on-chain `featuresHash` against raw feature inputs. |
-| | `GET /api/ml/model-info` | Exposes model coefficients, weights, and version parameters. |
 | **Explorer & Stats** | `GET /api/blockchain/status` | Real-time block height, gas price, network, and contract addresses. |
 | | `GET /api/blockchain/transactions`| Live transaction ledger for all on-chain actions. |
 | | `POST /api/blockchain/verify-batch`| Directly verifies a batch against smart contract storage. |
@@ -483,57 +544,94 @@ The backend exposes a comprehensive set of RESTful endpoints grouped into 7 func
 
 ---
 
-## 5. Off-Chain Dynamic Machine Learning Trust Scoring Engine
+## 5. Machine Learning Assessment Systems: Seed Quality & Seller Trust
 
-### 5.1 Why Off-Chain Computation with On-Chain Commitment?
-* **EVM Computational Constraints:** Calculating exponential recency decay, floating-point Bayesian priors, and complex multi-objective weighting directly on-chain consumes tens of thousands of gas per transaction and is severely limited by Solidity's lack of native floating-point math.
-* **The Oracle Dilemma:** Traditional Web3 systems delegate this calculation to off-chain oracles, which introduces a major risk: the oracle can be compromised or bribe-induced to manipulate a seller's rating.
-* **The SeedSure Solution:** The ML service calculates the score off-chain in microseconds, creates a **canonical JSON representation** of the exact feature inputs, computes its SHA-256 fingerprint (`featuresHash`), and submits both the score and the hash to `TrustScoreRegistry.sol`. Anyone can verify the oracle's honesty via the `/api/ml/verify` endpoint.
+SeedSure implements two interconnected but fundamentally separate assessment systems:
+1. **AI-Based Visual Seed Quality Assessment:** Batch-level Vision Transformer (ViT-B/16) model evaluating physical seed coat integrity and defect distribution.
+2. **Dynamic Seller Trust Score Engine:** Seller-level 6-factor multi-parameter reliability engine evaluating historical performance across transactions, certifications, deliveries, and farmer ratings.
 
 ---
 
-### 5.2 Mathematical Formulation
+### 5.1 Vision Transformer (ViT-B/16) Seed Quality Assessment
 
-The SeedSure dynamic trust model calculates a composite credibility score $S \in [0, 100]$ across five core performance dimensions, multiplied by an exponential recency decay factor:
+#### 5.1.1 Model Architecture & Preprocessing (`according_to_rsp_(1).ipynb`)
+- **Base Architecture**: `torchvision.models.vit_b_16(weights=ViT_B_16_Weights.DEFAULT)`
+- **Classification Head**:
+  $$\text{Dropout}(0.5) \to \text{Linear}(768 \to 256) \to \text{ReLU} \to \text{Dropout}(0.3) \to \text{Linear}(256 \to 5)$$
+- **Input Resolution**: $224 \times 224$ pixels, RGB format.
+- **ImageNet Normalization**:
+  - Mean: $[0.485, 0.456, 0.406]$
+  - Standard Deviation: $[0.229, 0.224, 0.225]$
+- **Model Checkpoint**: `ml_service/models/best_vit.pth`
 
-$$S = \left( 0.25 \cdot S_{\text{cert}} + 0.25 \cdot S_{\text{delivery}} + 0.20 \cdot S_{\text{success}} + 0.15 \cdot S_{\text{rating}} + 0.15 \cdot S_{\text{dispute}} \right) \times W_{\text{recency}}$$
+#### 5.1.2 Five Defect Classes & Prototype Scoring Formula
+The model classifies uploaded soybean photographs across 5 categories:
+1. `Intact` (Weight: 100)
+2. `Immature` (Weight: 55)
+3. `Spotted` (Weight: 40)
+4. `Skin-damaged` (Weight: 35)
+5. `Broken` (Weight: 10)
+
+$$\text{AI Visual Seed Quality Score} = \frac{P_{\text{Intact}} \times 100 + P_{\text{Immature}} \times 55 + P_{\text{Spotted}} \times 40 + P_{\text{Skin-damaged}} \times 35 + P_{\text{Broken}} \times 10}{100}$$
+
+#### 5.1.3 Quality Categories
+| Score | Category | Market Determination |
+| :---: | :--- | :--- |
+| **90–100** | **Excellent** | Premium physical grade |
+| **75–89** | **Good** | Standard commercial grade |
+| **60–74** | **Moderate** | Acceptable with caution |
+| **40–59** | **Poor** | Substandard defect ratio |
+| **0–39** | **Very Poor** | Defective / high breakage |
+
+#### 5.1.4 Strict Crop Restriction & Viability Disclaimer
+- **Crop Guard**: ViT inference is calibrated and active strictly for **Soybean**. Unsupported crops return an informative notice and rely on laboratory certifications.
+- **Mandatory Viability Disclaimer**: AI Visual Seed Quality Score evaluates optical surface integrity and physical defect distribution. It does **not** evaluate or guarantee physiological germination viability, emergence vigor, internal moisture content, or genetic purity.
+
+---
+
+### 5.2 Dynamic Seller Trust Score Engine
+
+The Seller Trust Score ($0 - 100$) dynamically tracks breeder reliability across multiple completed lifecycle events:
+
+$$\text{Seller Trust Score} = 0.25 \cdot S_{\text{quality}} + 0.20 \cdot S_{\text{cert}} + 0.20 \cdot S_{\text{delivery}} + 0.15 \cdot S_{\text{tx}} + 0.10 \cdot S_{\text{feedback}} + 0.10 \cdot S_{\text{complaints}}$$
 
 ```
 +--------------------------------------------------------------------------------------------------------+
-|                                  5-FACTOR TRUST SCORE WEIGHT ALLOCATION                                |
+|                                  6-FACTOR TRUST SCORE WEIGHT ALLOCATION                                |
 |                                                                                                        |
-|   [================= 25% =================]  Lab Certification Ratio (Scert)                          |
-|   [================= 25% =================]  On-Time Delivery Performance (Sdelivery)                 |
-|   [============= 20% =============]          Transaction Success Rate (Ssuccess)                       |
-|   [========= 15% =========]                  Bayesian Farmer Rating (Srating)                          |
-|   [========= 15% =========]                  Dispute & Penalty Performance (Sdispute)                  |
-|                                                                                                        |
-|   * Scaled by Exponential Recency Decay: Wrecency in [0.90, 1.00]                                      |
+|   [================= 25% =================]  Historical AI Seed Quality (Squality)                   |
+|   [============= 20% =============]          Certification Verification Ratio (Scert)                  |
+|   [============= 20% =============]          Successful Delivery Rate (Sdelivery)                      |
+|   [========== 15% ==========]                Transaction Performance (Stx)                             |
+|   [====== 10% ======]                        Farmer Feedback Rating (Sfeedback)                        |
+|   [====== 10% ======]                        Complaint & Dispute Health (Scomplaints)                  |
 +--------------------------------------------------------------------------------------------------------+
 ```
 
 #### Factor Breakdown:
-1. **Lab Certification Ratio ($S_{\text{cert}}$, Weight: 25%):**
-   Measures the breeder's dedication to quality testing:
+1. **Historical AI Seed Quality ($S_{\text{quality}}$, Weight: 25%):**
+   Mean AI Visual Quality Score across all assessed batches:
+   $$S_{\text{quality}} = \frac{1}{N} \sum_{i=1}^{N} \text{VisualQualityScore}_i$$
+2. **Certification Verification Ratio ($S_{\text{cert}}$, Weight: 20%):**
+   Ratio of certified batches to total registered lots:
    $$S_{\text{cert}} = \left( \frac{\text{Certified Batches Count}}{\text{Total Batches Count}} \right) \times 100$$
-2. **On-Time Delivery Performance ($S_{\text{delivery}}$, Weight: 25%):**
-   Penalizes delayed shipments which can ruin a farmer's planting window:
+3. **Successful Delivery Rate ($S_{\text{delivery}}$, Weight: 20%):**
+   Penalizes delayed shipments:
    $$S_{\text{delivery}} = \max\left(0, \frac{\text{Delivered Orders} - 0.5 \times \text{Delayed Orders}}{\text{Total Orders}}\right) \times 100$$
-3. **Transaction Success Rate ($S_{\text{success}}$, Weight: 20%):**
-   Percentage of orders fulfilled without failure or cancellation:
-   $$S_{\text{success}} = \left( \frac{\text{Successful Orders}}{\text{Total Orders}} \right) \times 100$$
-4. **Bayesian Farmer Rating ($S_{\text{rating}}$, Weight: 15%):**
-   Applies an empirical Bayesian prior ($\mu = 3.5, k = 3$) to prevent new sellers with a single 5-star review from unfairly outranking established breeders:
-   $$R_{\text{Bayes}} = \frac{R_{\text{avg}} \times n + 3.5 \times 3}{n + 3}$$
-   $$S_{\text{rating}} = \left( \frac{R_{\text{Bayes}} - 1}{4} \right) \times 100$$
-5. **Dispute Penalty Rate ($S_{\text{dispute}}$, Weight: 15%):**
-   Severely penalizes sellers who lose formal disputes (poor germination, fake seeds):
-   $$S_{\text{dispute}} = \max\left(0, 100 - \frac{2.0 \times \text{Disputes Lost} + 0.5 \times \text{Disputed Orders}}{\text{Total Orders}} \times 100\right)$$
-6. **Exponential Recency Decay ($W_{\text{recency}}$):**
-   Accounts for breeder activity. Inactive breeders slowly experience score decay with a half-life $\lambda = 90$ days, bounded between $0.90$ and $1.00$:
-   $$W_{\text{recency}} = 0.90 + 0.10 \times \exp\left( -\frac{\ln 2}{90} \times \Delta t_{\text{days}} \right)$$
+4. **Transaction Performance ($S_{\text{tx}}$, Weight: 15%):**
+   Percentage of orders fulfilled without failure:
+   $$S_{\text{tx}} = \left( \frac{\text{Successful Orders}}{\text{Total Orders}} \right) \times 100$$
+5. **Farmer Feedback ($S_{\text{feedback}}$, Weight: 10%):**
+   Empirical Bayesian prior ($\mu = 3.5, k = 3$) for verified escrow order reviews:
+   $$R_{\text{Bayes}} = \frac{R_{\text{avg}} \times n + 3.5 \times 3}{n + 3}, \quad S_{\text{feedback}} = \left( \frac{R_{\text{Bayes}} - 1}{4} \right) \times 100$$
+6. **Complaint & Dispute Health ($S_{\text{complaints}}$, Weight: 10%):**
+   Dispute avoidance index:
+   $$S_{\text{complaints}} = \max\left(0, 100 - \frac{2.0 \times \text{Disputes Lost} + 0.5 \times \text{Disputed Orders}}{\text{Total Orders}} \times 100\right)$$
 
----
+#### Fairness & Integrity Rules:
+1. Missing data is never treated as a score of 100.
+2. New sellers receive **"New Seller – Insufficient Data"** status and Low confidence until evidence threshold ($N \ge 3$ batches, $M \ge 2$ orders) is met.
+3. Every score update records an auditable timestamped reason on blockchain and database.
 
 ### 5.3 Risk Categorization & Farmer Protection Matrix
 
